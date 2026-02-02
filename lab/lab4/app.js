@@ -1,3 +1,5 @@
+console.log("APP.JS FILE LOADED");
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -73,7 +75,7 @@ app.get('/', (req, res) => {
 
 
 app.get('/login', (req, res) => {
-    res.render('login');
+    res.render('login', { error: null });
 });
 
 // TODO: Implement user login logic
@@ -81,7 +83,40 @@ app.get('/login', (req, res) => {
 // 2. Set session user
 // 3. Redirect to appropriate dashboard based on role
 app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
 
+    pool = getPool();
+    if (!pool) {
+        return res.status(500).send("Database not configured");
+    }
+
+    try {
+        const client = await pool.connect();
+        const result = await client.query(
+            'SELECT * FROM Users WHERE username = $1 AND password = $2',
+            [username, password]
+        );
+        client.release();
+
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            req.session.user = {
+                id: user.id,
+                username: user.username,
+                role: user.role
+            };
+            return res.redirect(
+                user.role === 'instructor'
+                    ? '/instructor/dashboard'
+                    : '/student/dashboard'
+            );
+        } else {
+            return res.render('login', { error: 'Invalid credentials' });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.render('login', { error: 'An error occurred' });
+    }
 });
 
 app.get('/logout', (req, res) => {
