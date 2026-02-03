@@ -16,12 +16,22 @@
     <!-- Show: Course ID, Name, Credits, Slot -->
     <!-- Action: Drop Button -->
     <h2>My Registered Courses</h2>
+    Total Credits: <%= totalCredits %> <br>
+    <ul>
+        <% registered_courses.forEach(course =>{ %>
+            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %></li>
+        <%})%>
+    </ul>
 
     <!-- TODO: Display Available Courses -->
     <!-- Show: Course ID, Name, Credits, Slot, Capacity -->
     <!-- Action: Register Button -->
     <h2>Available Courses</h2>
-
+    <ul>
+        <% available_courses.forEach(course =>{ %>
+            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>, <%= course.capacity %></li>
+        <%})%>
+    </ul>    
 </body>
 
 </html>

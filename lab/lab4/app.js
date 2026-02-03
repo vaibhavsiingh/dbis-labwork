@@ -38,11 +38,17 @@ app.use(session({
 
 function isAuthenticated(req, res, next) {
     // TODO: Implement authentication check
+    if(!req.session.user) {
+        return res.redirect('/login');
+    }
     next();
-}
+}   
 
 function isInstructor(req, res, next) {
     // TODO: Implement check for instructor role
+    if(req.session.user.role !== 'instructor') {
+        return res.status(403).send("Access denied");
+    }
     next();
 }
 
@@ -101,7 +107,7 @@ app.post('/login', async (req, res) => {
         if (result.rows.length > 0) {
             const user = result.rows[0];
             req.session.user = {
-                id: user.id,
+                user_id: user.user_id,
                 username: user.username,
                 role: user.role
             };
@@ -130,7 +136,38 @@ app.get('/logout', (req, res) => {
 // 2. Fetch all available courses (exclude registered ones)
 // 3. Calculate total credits
 app.get('/student/dashboard', isAuthenticated, async (req, res) => {
+    if  (req.session.user.role !== 'instructor') {
+        pool = getPool();
+        if(!pool) {
+            return res.status(500).send("Database not configured");
+        }
+        try{
+            const { user_id, username, role } = req.session.user;
+            const client = await pool.connect();
+            const registered_courses  = await client.query(
+                'SELECT course_id, course_name, credits, slot FROM Courses WHERE Courses.course_id IN (SELECT course_id FROM Registrations WHERE student_id = $1)',
+                [user_id]
+            );
+            const available_courses = await client.query(
+                'SELECT course_id, course_name, credits, slot, capacity FROM courses WHERE courses.slot NOT IN (SELECT courses.slot FROM Courses WHERE Courses.course_id IN (SELECT course_id FROM Registrations WHERE student_id = $1))',
+                [user_id]
+            );
+            client.release();            
+            var totalCredits  = 0;
+            registered_courses.rows.forEach(course => {
+                totalCredits += course.credits;
+            });
 
+            return res.render('student_dashboard', {available_courses: available_courses.rows, registered_courses: registered_courses.rows, totalCredits: totalCredits});
+        }
+        catch (err){
+            console.log(err);
+            return res.render('login', {error: 'An error occured'});
+        }
+    }
+    else {
+        return res.render('login', {error: 'Your are not logged in'});
+    }
 });
 
 // TODO: Implement registration logic
