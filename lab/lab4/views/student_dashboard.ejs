@@ -19,7 +19,9 @@
     Total Credits: <%= totalCredits %> <br>
     <ul>
         <% registered_courses.forEach(course =>{ %>
-            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %></li>
+            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>
+                <button onclick="dropCourse('<%= course.course_id %>')">Drop</button>
+            </li>
         <%})%>
     </ul>
 
@@ -33,5 +35,29 @@
         <%})%>
     </ul>    
 </body>
+
+<script>
+    async function dropCourse(courseId){
+        try {
+            const res = await fetch('/student/drop', {
+                method:'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({course_id: courseId})
+            });
+
+            if(!res.ok){
+                throw new Error('Request Failed');
+            }
+
+            location.reload();
+        } catch (err){
+            console.error(err);
+            alert('Failed to drop course');
+        }
+
+    }
+</script>
 
 </html>
