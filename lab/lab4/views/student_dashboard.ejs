@@ -31,7 +31,9 @@
     <h2>Available Courses</h2>
     <ul>
         <% available_courses.forEach(course =>{ %>
-            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>, <%= course.capacity %></li>
+            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>, <%= course.capacity %>
+                <button onclick="registerCourse('<%= course.course_id %>')">Register</button>
+            </li>
         <%})%>
     </ul>    
 </body>
@@ -55,6 +57,29 @@
         } catch (err){
             console.error(err);
             alert('Failed to drop course');
+        }
+
+    }
+
+    async function registerCourse(courseId){
+        try {
+            const res = await fetch('/student/register', {
+                method:'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({course_id: courseId})
+            });
+            
+            if(!res.ok){
+                throw new Error('Request Failed');
+            }
+            
+            location.reload();
+            // alert('Tryin to register course');
+        } catch (err){
+            console.error(err);
+            alert('Failed to register course');
         }
 
     }
