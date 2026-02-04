@@ -17,6 +17,11 @@
     <!-- Action: /instructor/add-student -->
     <h3>Add Student</h3>
 
+    <form>
+        <label>Enter Student Username </label>
+        <button type="submit">Add Student</button>
+    </form>
+
     <!-- TODO: List Enrolled Students -->
     <!-- Show: Student ID, Name -->
     <!-- Action: Remove Button -->
@@ -24,7 +29,7 @@
     <ul>
         <% student_info.forEach(course =>{ %>
             <li><%= student_info.student_id %>, <%= student_info.username %>, <%= student_info.full_name %>
-                <button onclick="removeStudent('<%= student_info.student_id %>')">Manage</button>
+                <button onclick="removeStudent('<%= student_info.student_id %>', '<%= course_id %>')">Manage</button>
             </li>
         <%})%>
     </ul>
@@ -33,14 +38,14 @@
 
 <script>
 
-    async function removeStudent(studentID){
+    async function removeStudent(studentID, courseID){
         try {
-            const res = await fetch('/instructor/course/:id', {
+            const res = await fetch('/instructor/remove-student', {
                 method:'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({course_id: courseId})
+                body: JSON.stringify({student_id: studentId, course_id: courseId})
             });
             
             if(!res.ok){

@@ -192,6 +192,11 @@ app.post('/student/register', isAuthenticated, async (req, res) => {
         }
         const client  = await pool.connect();
         const courseRes = await client.query('select * from Courses where course_id = $1', [course_id]);
+        if(courseRes.rows.length === 0){
+            client.release();
+            return res.status(400).send(" Error: Course does not exist.");
+        }
+
         const course = courseRes.rows[0];
 
         const reg = await client.query(
@@ -348,14 +353,88 @@ app.get('/instructor/course/:id', isAuthenticated, isInstructor, async (req, res
 // 3. Check Credit Limit (If exceeded, allow but show WARNING)
 // 4. Insert into Registrations
 app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, res) => {
+    const { student_id, course_id } = req.body;
+    pool = getPool();
+    if(!pool){
+        return res.status(500).send("Database not configured");
+    }
+    try{
+        const {user_id, username, role} = req.session.user;
+        if(role !== 'instructor'){
+            return res.render('login', {error: 'You are not logged in as a instructor'});
+        }
+        const client  = await pool.connect();
 
+        const already = await client.query(
+            'select * from users where role = \'student\' and user_id = $1',
+            [student_id]);
+        if(already.rows.length === 0){
+            client.release();
+            return res.status(400).send(" Error: Student does not exist.");
+        }
+
+        const exist_ = await client.query(
+            'select * from registrations where student_id = $1 and course_id = $2', 
+            [student_id, course_id]);
+        if(exist_.rows.length !== 0){
+            client.release();
+            return res.status(400).send(" Error: Student already in course.");
+        }
+
+        const reg = await client.query(
+            `select r.*, c.slot, c.credits 
+             FROM Registrations r 
+             JOIN Courses c ON r.course_id = c.course_id 
+             WHERE r.student_id = $1`, 
+            [user_id]
+        );
+        const current = reg.rows;
+        const tot_cred = current.reduce((sum, r) => sum + r.credits, 0);
+        if (tot_cred + course.credits > 24) {
+            // Give Warning and continue
+        }
+
+        const result = await client.query(
+            'INSERT into Registrations (student_id, course_id) VALUES ($1, $2)',
+            [student_id, course_id]
+        );
+        client.release();
+        console.log("Removed a student from a course");
+        return res.redirect('/instructor/remove-student');
+    }
+    catch (err){
+        console.log(err);
+        return res.status(500).render('login', {error: 'An error occurred while removing the student'});
+    }
 });
 
 
 // TODO: Implement student removal
 // 1. Delete from Registrations
 app.post('/instructor/remove-student', isAuthenticated, isInstructor, async (req, res) => {
-
+    const { student_id, course_id } = req.body;
+    pool = getPool();
+    if(!pool){
+        return res.status(500).send("Database not configured");
+    }
+    try{
+        const {user_id, username, role} = req.session.user;
+        if(role !== 'instructor'){
+            return res.render('login', {error: 'You are not logged in as a instructor'});
+        }
+        const client  = await pool.connect();
+        const result = await client.query(
+            'DELETE FROM Registrations WHERE student_id = $1 AND course_id = $2',
+            [student_id, course_id]
+        );
+        client.release();
+        console.log("Removed a student from a course");
+        return res.redirect('/instructor/remove-student');
+    }
+    catch (err){
+        console.log(err);
+        return res.status(500).render('login', {error: 'An error occurred while removing the student'});
+    }
 });
 
 
