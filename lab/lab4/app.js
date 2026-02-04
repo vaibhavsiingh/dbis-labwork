@@ -6,12 +6,14 @@ const session = require('express-session');
 const { Pool } = require('pg');
 require('dotenv').config();
 
+
 // Global variable to store database credentials
 let dbConfig = null;
 let pool = null;
 
 const app = express();
 const port = 3000;
+app.use(bodyParser.json());
 
 // Check for environment variables
 if (process.env.DB_HOST && process.env.DB_PORT && process.env.DB_NAME && process.env.DB_USER && process.env.DB_PASSWORD) {
@@ -183,7 +185,29 @@ app.post('/student/register', isAuthenticated, async (req, res) => {
 // TODO: Implement drop logic
 // 1. Delete from Registrations table
 app.post('/student/drop', isAuthenticated, async (req, res) => {
-
+    const { course_id } = req.body;
+    pool = getPool();
+    if(!pool){
+        return res.status(500).send("Database not configured");
+    }
+    try{
+        const {user_id, username, role} = req.session.user;
+        if(role !== 'student'){
+            return res.render('login', {error: 'You are not logged in as a student'});
+        }
+        const client  = await pool.connect();
+        const result = await client.query(
+            'DELETE FROM Registrations WHERE student_id = $1 AND course_id = $2',
+            [user_id, course_id]
+        );
+        client.release();
+        console.log("Deleted a course from a students");
+        return res.redirect('/student/dashboard');
+    }
+    catch (err){
+        console.log(err);
+        return res.status(500).render('login', {error: 'An error occurred while dropping the course'});
+    }
 });
 
 
