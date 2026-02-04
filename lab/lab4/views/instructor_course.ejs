@@ -12,54 +12,94 @@
 
     <hr>
 
-    <!-- TODO: Add Student Form -->
-    <!-- Input: Student Username -->
-    <!-- Action: /instructor/add-student -->
+    <!-- Add Student -->
     <h3>Add Student</h3>
-
-    <form>
-        <label>Enter Student Username </label>
+    <form onsubmit="addStudent(event)">
+        <label>Enter Student Username</label>
+        <input type="text" id="student_input" required>
         <button type="submit">Add Student</button>
     </form>
 
-    <!-- TODO: List Enrolled Students -->
-    <!-- Show: Student ID, Name -->
-    <!-- Action: Remove Button -->
+    <hr>
+
+    <!-- Enrolled Students -->
     <h3>Enrolled Students</h3>
     <ul>
-        <% student_info.forEach(course =>{ %>
-            <li><%= student_info.student_id %>, <%= student_info.username %>, <%= student_info.full_name %>
-                <button onclick="removeStudent('<%= student_info.student_id %>', '<%= course_id %>')">Manage</button>
+        <% if (student_info.length === 0) { %>
+            <li>No students enrolled.</li>
+        <% } %>
+
+        <% student_info.forEach(student => { %>
+            <li>
+                <%= student.student_id %>,
+                <%= student.username %>,
+                <%= student.full_name %>
+                <button onclick="removeStudent('<%= student.username %>', '<%= course_id %>')">
+                    Remove
+                </button>
             </li>
-        <%})%>
+        <% }) %>
     </ul>
 
 </body>
 
 <script>
-
-    async function removeStudent(studentID, courseID){
+    async function removeStudent(username, courseId) {
         try {
             const res = await fetch('/instructor/remove-student', {
-                method:'POST',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({student_id: studentId, course_id: courseId})
+                body: JSON.stringify({
+                    username: username,
+                    course_id: courseId
+                })
             });
-            
-            if(!res.ok){
+
+            if (!res.ok) {
                 throw new Error('Request Failed');
             }
-            
+
             location.reload();
-        } catch (err){
+        } catch (err) {
             console.error(err);
             alert('Failed to remove student');
         }
-
     }
 
+    async function addStudent(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('student_input').value.trim();
+        const courseId = "<%= course_id %>";
+
+        if (!username) {
+            alert('Username required');
+            return;
+        }
+
+        try {
+            const res = await fetch('/instructor/add-student', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    course_id: courseId
+                })
+            });
+            console.log("Everything okay");
+            if (!res.ok) {
+                throw new Error('Request Failed');
+            }
+            
+        } catch (err) {
+            console.error(err);
+            alert('Failed to add student');
+        }
+    }
 </script>
 
 </html>

@@ -19,7 +19,9 @@
     <ul>
         <% courses.forEach(course =>{ %>
             <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>
-                <button onclick="manageCourse('<%= course.course_id %>')">Manage</button>
+                <a href="/instructor/course/<%= course.course_id %>">
+                    <button>Manage</button>
+                </a>
             </li>
         <%})%>
     </ul>
@@ -27,31 +29,5 @@
     <!-- Link to Course Details page (/instructor/course/:id) -->
 
 </body>
-
-<script>
-    async function manageCourse(courseId){
-        try {
-            const res = await fetch('/instructor/course/:id', {
-                method:'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({course_id: courseId})
-            });
-            
-            if(!res.ok){
-                throw new Error('Request Failed');
-            }
-            
-            location.reload();
-            // alert('Loading course info');
-        } catch (err){
-            console.error(err);
-            alert('Failed to load course info');
-        }
-    }
-
-</script>
-
 
 </html>
