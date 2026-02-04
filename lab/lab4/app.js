@@ -205,18 +205,18 @@ app.post('/student/register', isAuthenticated, async (req, res) => {
 
         if (current.some(r => r.course_id === course_id)) {
             client.release();
-            return res.status(400).send("Already registered.");
+            return res.status(400).send(" Error: Course already registered.");
         }
 
         if (current.some(r => r.slot === course.slot)) {
             client.release();
-            return res.status(400).send(`Slot clash with ${course.slot}`);
+            return res.status(400).send(`Error: Slot clash with ${course.slot}`);
         }
 
         const tot_cred = current.reduce((sum, r) => sum + r.credits, 0);
         if (tot_cred + course.credits > 24) {
             client.release();
-            return res.status(400).send("Credit limit exceeded.");
+            return res.status(400).send("Error: Credit limit exceeded.");
         }
 
         const cap = await client.query('SELECT COUNT(*) FROM Registrations WHERE course_id = $1', [course_id]);
@@ -272,14 +272,73 @@ app.post('/student/drop', isAuthenticated, async (req, res) => {
 // TODO: Render instructor dashboard
 // 1. Fetch courses taught by this instructor
 app.get('/instructor/dashboard', isAuthenticated, isInstructor, async (req, res) => {
-
+    if  (req.session.user.role === 'instructor') {
+        pool = getPool();
+        if(!pool) {
+            return res.status(500).send("Database not configured");
+        }
+        try{
+            const { user_id, username, role } = req.session.user;
+            const client = await pool.connect();
+            const courses  = await client.query(
+                'select course_id, course_name, credits, slot from courses where courses.instructor_id = $1',
+                [user_id]
+            );
+            client.release();    
+            return res.render('instructor_dashboard', {courses: courses.rows});
+        }
+        catch (err){
+            console.log(err);
+            return res.render('login', {error: 'An error occured'});
+        }
+    }
+    else {
+        return res.render('login', {error: 'You are not logged in'});
+    }
 });
 
 // TODO: Show students enrolled in a specific course
 // 1. Verify instructor owns the course
 // 2. Fetch enrolled students
 app.get('/instructor/course/:id', isAuthenticated, isInstructor, async (req, res) => {
+    console.log("Gandu");
+    // const { course_id } = req.body; This line does not work
+    pool = getPool();
+    if(!pool) {
+        return res.status(500).send("Database not configured");
+    }
+    try{
+        const { user_id, username, role } = req.session.user;
+        const client = await pool.connect();
 
+        const inst = await client.query(
+            `select * from courses
+            WHERE courses.instructor_id = $1`, 
+            [user_id]
+        );
+        const current = inst.rows;
+
+        if (!(current.some(r => r.course_id === course_id))) {
+            client.release();
+            return res.status(400).send("Not the instructor of course.");
+        }
+
+        const stud = await client.query(
+            `select student_id, username, full_name
+            from registrations r join users u on r.student_id = u.user_id
+            where r.course_id = $1
+            `, [course_id]
+        ) 
+        const student_info = stud.rows;
+
+        client.release();    
+        return res.render('instructor/course/:id', {student_info: student_info.rows});
+    }
+    catch (err){
+        console.log(err);
+        return res.render('login', {error: 'An error occured'});
+    }
+    
 });
 
 

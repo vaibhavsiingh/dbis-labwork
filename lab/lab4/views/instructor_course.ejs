@@ -21,7 +21,40 @@
     <!-- Show: Student ID, Name -->
     <!-- Action: Remove Button -->
     <h3>Enrolled Students</h3>
+    <ul>
+        <% student_info.forEach(course =>{ %>
+            <li><%= student_info.student_id %>, <%= student_info.username %>, <%= student_info.full_name %>
+                <button onclick="removeStudent('<%= student_info.student_id %>')">Manage</button>
+            </li>
+        <%})%>
+    </ul>
 
 </body>
+
+<script>
+
+    async function removeStudent(studentID){
+        try {
+            const res = await fetch('/instructor/course/:id', {
+                method:'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({course_id: courseId})
+            });
+            
+            if(!res.ok){
+                throw new Error('Request Failed');
+            }
+            
+            location.reload();
+        } catch (err){
+            console.error(err);
+            alert('Failed to remove student');
+        }
+
+    }
+
+</script>
 
 </html>
