@@ -34,7 +34,7 @@
                 <%= student.student_id %>,
                 <%= student.username %>,
                 <%= student.full_name %>
-                <button onclick="removeStudent('<%= student.username %>', '<%= course_id %>')">
+                <button onclick="removeStudent('<%= student.student_id %>', '<%= course_id %>')">
                     Remove
                 </button>
             </li>
@@ -44,7 +44,7 @@
 </body>
 
 <script>
-    async function removeStudent(username, courseId) {
+    async function removeStudent(student_id, courseId) {
         try {
             const res = await fetch('/instructor/remove-student', {
                 method: 'POST',
@@ -52,7 +52,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    username: username,
+                    student_id: student_id,
                     course_id: courseId
                 })
             });
@@ -90,7 +90,7 @@
                     course_id: courseId
                 })
             });
-            console.log("Everything okay");
+            location.reload();
             if (!res.ok) {
                 throw new Error('Request Failed');
             }

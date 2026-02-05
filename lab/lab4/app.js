@@ -169,7 +169,7 @@ app.get('/student/dashboard', isAuthenticated, async (req, res) => {
         }
     }
     else {
-        return res.render('login', {error: 'Your are not logged in'});
+        return res.render('login', {error: 'You are not logged in'});
     }
 });
 
@@ -181,69 +181,59 @@ app.get('/student/dashboard', isAuthenticated, async (req, res) => {
 // 5. Insert into Registrations table
 app.post('/student/register', isAuthenticated, async (req, res) => {
     const { course_id } = req.body;
+
     pool = getPool();
-    if(!pool){
-        return res.status(500).send("Database not configured");
-    }
-    try{
-        const {user_id, username, role} = req.session.user;
-        if(role !== 'student'){
-            return res.render('login', {error: 'You are not logged in as a student'});
+    const client = await pool.connect();
+
+    try {
+        const { user_id, role } = req.session.user;
+        if (role !== 'student') {
+            return res.render('login', {error: "Login as a student"});
         }
-        const client  = await pool.connect();
-        const courseRes = await client.query('select * from Courses where course_id = $1', [course_id]);
-        if(courseRes.rows.length === 0){
-            client.release();
-            return res.status(400).send(" Error: Course does not exist.");
+
+        const courseRes = await client.query(
+            'SELECT * FROM Courses WHERE course_id = $1',
+            [course_id]
+        );
+        if (courseRes.rows.length === 0) {
+            return res.status(400).json({message: "Course does not exist"});
         }
 
         const course = courseRes.rows[0];
 
         const reg = await client.query(
-            `select r.*, c.slot, c.credits 
-             FROM Registrations r 
-             JOIN Courses c ON r.course_id = c.course_id 
-             WHERE r.student_id = $1`, 
+            `SELECT c.slot, c.credits
+             FROM Registrations r
+             JOIN Courses c ON r.course_id = c.course_id
+             WHERE r.student_id = $1`,
             [user_id]
         );
-        const current = reg.rows;
 
-        if (current.some(r => r.course_id === course_id)) {
-            client.release();
-            return res.status(400).send(" Error: Course already registered.");
+        if (reg.rows.some(r => r.slot === course.slot)) {
+            return res.status(400).json({message: "Slot clash"});
         }
 
-        if (current.some(r => r.slot === course.slot)) {
-            client.release();
-            return res.status(400).send(`Error: Slot clash with ${course.slot}`);
+        const totalCredits =
+            reg.rows.reduce((s, r) => s + r.credits, 0) + course.credits;
+
+        if (totalCredits > 24) {
+            return res.status(400).json({message: "Credit limit exceeded"});
         }
 
-        const tot_cred = current.reduce((sum, r) => sum + r.credits, 0);
-        if (tot_cred + course.credits > 24) {
-            client.release();
-            return res.status(400).send("Error: Credit limit exceeded.");
-        }
-
-        const cap = await client.query('SELECT COUNT(*) FROM Registrations WHERE course_id = $1', [course_id]);
-        if (parseInt(cap.rows[0].count) >= course.capacity) {
-            client.release();
-            return res.status(400).send("Course is full.");
-        }
-
-        const result_ = await client.query(
-            'INSERT INTO Registrations (student_id, course_id) VALUES ($1, $2)',
+        await client.query(
+            'INSERT INTO Registrations (student_id, course_id) VALUES ($1,$2)',
             [user_id, course_id]
         );
 
+        return res.status(200).send("OK");
+    } catch (e) {
+        console.error(e);
+        return res.status(500).send("Server error");
+    } finally {
         client.release();
-        console.log("Registered a course for a student");
-        return res.redirect('/student/dashboard');
-    }
-    catch (err){
-        console.log(err);
-        return res.status(500).render('login', {error: 'An error occurred while registering the course'});
     }
 });
+
 
 // TODO: Implement drop logic
 // 1. Delete from Registrations table
@@ -265,7 +255,7 @@ app.post('/student/drop', isAuthenticated, async (req, res) => {
         );
         client.release();
         console.log("Deleted a course from a students");
-        return res.redirect('/student/dashboard');
+        return res.status(200).send("OK");
     }
     catch (err){
         console.log(err);
@@ -365,7 +355,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
             'select * from users where role = \'student\' and username = $1',
             [username]
         );
-
+        console.log("student_id_query.rows",student_id_query.rows);
         if(student_id_query.rows.length === 0){
             client.release();
             return res.status(400).send(" Error: Student does not exist.");
@@ -378,10 +368,27 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
         const exist_ = await client.query(
             'select * from registrations where student_id = $1 and course_id = $2', 
             [student_id, course_id]);
+
+        console.log("exist_.rows",exist_.rows);
+
         if(exist_.rows.length !== 0){
             client.release();
             return res.status(400).send(" Error: Student already in course.");
         }
+
+        const course_query = await client.query(
+            'SELECT course_id, credits FROM Courses WHERE course_id = $1', [course_id]
+        );
+
+        
+
+        if (course_query.rows.length === 0){
+            client.release();
+            console.log("course_query.rows empty");
+            return res.status(404).send("Course not found");
+        }
+
+        const course = course_query.rows[0];
 
         const reg = await client.query(
             `select r.*, c.slot, c.credits 
@@ -391,16 +398,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
             [student_id]
         );
 
-        const course_query = await client.query(
-            'SELECT course_id, credits FROM Courses WHERE course_id = $1', [course_id]
-        );
-
-        if (course_query.rows.length === 0){
-            client.release();
-            return res.status(404).send("Course not found");
-        }
-
-        const course = course_query.rows[0];
+        
 
         const current = reg.rows;
         console.log("current", current);
@@ -429,26 +427,14 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
 // TODO: Implement student removal
 // 1. Delete from Registrations
 app.post('/instructor/remove-student', isAuthenticated, isInstructor, async (req, res) => {
-    const { username, course_id } = req.body;
+    const { student_id, course_id } = req.body;
     pool = getPool();
     if(!pool){
         return res.status(500).send("Database not configured");
     }
     try{             
-        const client  = await pool.connect();
-
-        const student_id_query = await client.query(
-            'select * from users where role = \'student\' and username = $1',
-            [username]
-        );
-
-        if(student_id_query.rows.length === 0){
-            client.release();
-            return res.status(400).send(" Error: Student does not exist.");
-        }
-        
-        const student = student_id_query.rows[0];
-        const student_id = student.user_id;      
+        const client  = await pool.connect();               
+                
 
         const result = await client.query(
             'DELETE FROM Registrations WHERE student_id = $1 AND course_id = $2',

@@ -11,10 +11,11 @@
     <a href="/logout">Logout</a>
 
     <hr>
-
+    <div id="error-box" style="display:none; color:red;"></div>
     <!-- TODO: Display Registered Courses -->
     <!-- Show: Course ID, Name, Credits, Slot -->
     <!-- Action: Drop Button -->
+     
     <h2>My Registered Courses</h2>
     Total Credits: <%= totalCredits %> <br>
     <ul>
@@ -39,6 +40,12 @@
 </body>
 
 <script>
+    function showError(msg) {
+        const box = document.getElementById('error-box');
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
+
     async function dropCourse(courseId){
         try {
             const res = await fetch('/student/drop', {
@@ -48,15 +55,15 @@
                 },
                 body: JSON.stringify({course_id: courseId})
             });
-
-            if(!res.ok){
-                throw new Error('Request Failed');
+            if (!res.ok) {
+                const err = await res.json();
+                showError(err.message);
+                return;
             }
 
             location.reload();
         } catch (err){
-            console.error(err);
-            alert('Failed to drop course');
+            showError("Network Error.");
         }
 
     }
@@ -71,15 +78,14 @@
                 body: JSON.stringify({course_id: courseId})
             });
             
-            if(!res.ok){
-                throw new Error('Request Failed');
-            }
-            
-            location.reload();
-            // alert('Tryin to register course');
+            if (!res.ok) {
+                const err = await res.json();
+                showError(err.message);
+                return;
+            }            
+            location.reload();            
         } catch (err){
-            console.error(err);
-            alert('Failed to register course');
+            showError("Network Error");
         }
 
     }
