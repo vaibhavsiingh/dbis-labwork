@@ -4,30 +4,77 @@
 <head>
     <meta charset="UTF-8">
     <title>Instructor Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        button {
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Instructor Dashboard</h1>
-    <a href="/logout">Logout</a>
+    <div class="container">
+        <h1>Instructor Dashboard</h1>
+        <a href="/logout">Logout</a>
 
-    <hr>
+        <hr>
 
-    <!-- TODO: Display Courses Taught by Instructor -->
+        <h2>My Courses</h2>
+        <h4>Select a course to manage students</h4>
 
-    <h2>My Courses</h2>
-    <h4>Select a course to manage students </h4><br>
-    <ul>
-        <% courses.forEach(course =>{ %>
-            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>
-                <a href="/instructor/course/<%= course.course_id %>">
-                    <button>Manage</button>
-                </a>
-            </li>
-        <%})%>
-    </ul>
-
-    <!-- Link to Course Details page (/instructor/course/:id) -->
-
+        <table>
+            <tr>
+                <th>Course ID</th>
+                <th>Name</th>
+                <th>Credits</th>
+                <th>Slot</th>
+                <th>Action</th>
+            </tr>
+            <% courses.forEach(course => { %>
+                <tr>
+                    <td><%= course.course_id %></td>
+                    <td><%= course.course_name %></td>
+                    <td><%= course.credits %></td>
+                    <td><%= course.slot %></td>
+                    <td>
+                        <a href="/instructor/course/<%= course.course_id %>">
+                            <button>Manage</button>
+                        </a>
+                    </td>
+                </tr>
+            <% }) %>
+        </table>
+    </div>
 </body>
 
 </html>

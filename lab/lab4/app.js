@@ -152,7 +152,7 @@ app.get('/student/dashboard', isAuthenticated, async (req, res) => {
                 [user_id]
             );
             const available_courses = await client.query(
-                'SELECT course_id, course_name, credits, slot, capacity FROM courses WHERE courses.slot NOT IN (SELECT courses.slot FROM Courses WHERE Courses.course_id IN (SELECT course_id FROM Registrations WHERE student_id = $1))',
+                'SELECT course_id, course_name, credits, slot, capacity FROM courses WHERE courses.course_id NOT IN (SELECT course_id FROM Registrations WHERE student_id = $1)',
                 [user_id]
             );
             client.release();            

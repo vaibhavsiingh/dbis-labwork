@@ -4,25 +4,63 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Course Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        form {
+            width: 300px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 8px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Course Registration Portal</h1>
 
-    <!-- TODO: Implement Login Form -->
-    <!-- Inputs: username, password -->
-    <!-- Method: POST, Action: /login -->
-
     <form action="/login" method="POST">        
         <% if (error) { %>
             <p style="color: red;"><%= error %></p>
         <% } %>
+
         <label>Username:</label>
         <input type="text" name="username" required>
+
         <br><br>
+
         <label>Password:</label>
         <input type="password" name="password" required>
+
         <br><br>
+
         <button type="submit">Login</button>
     </form>
 

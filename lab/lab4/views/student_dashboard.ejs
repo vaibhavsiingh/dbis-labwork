@@ -4,39 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        button {
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        #error-box {
+            margin: 10px 0;
+            color: red;
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Student Dashboard</h1>
-    <a href="/logout">Logout</a>
+    <div class="container">
+        <h1>Student Dashboard</h1>
+        <a href="/logout">Logout</a>
 
-    <hr>
-    <div id="error-box" style="display:none; color:red;"></div>
-    <!-- TODO: Display Registered Courses -->
-    <!-- Show: Course ID, Name, Credits, Slot -->
-    <!-- Action: Drop Button -->
-     
-    <h2>My Registered Courses</h2>
-    Total Credits: <%= totalCredits %> <br>
-    <ul>
-        <% registered_courses.forEach(course =>{ %>
-            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>
-                <button onclick="dropCourse('<%= course.course_id %>')">Drop</button>
-            </li>
-        <%})%>
-    </ul>
+        <hr>
 
-    <!-- TODO: Display Available Courses -->
-    <!-- Show: Course ID, Name, Credits, Slot, Capacity -->
-    <!-- Action: Register Button -->
-    <h2>Available Courses</h2>
-    <ul>
-        <% available_courses.forEach(course =>{ %>
-            <li><%= course.course_id %>, <%= course.course_name %>, <%= course.credits %>, <%= course.slot %>, <%= course.capacity %>
-                <button onclick="registerCourse('<%= course.course_id %>')">Register</button>
-            </li>
-        <%})%>
-    </ul>    
+        <div id="error-box"></div>
+
+        <h2>My Registered Courses</h2>
+        Total Credits: <%= totalCredits %>
+
+        <table>
+            <tr>
+                <th>Course ID</th>
+                <th>Name</th>
+                <th>Credits</th>
+                <th>Slot</th>
+                <th>Action</th>
+            </tr>
+            <% registered_courses.forEach(course => { %>
+                <tr>
+                    <td><%= course.course_id %></td>
+                    <td><%= course.course_name %></td>
+                    <td><%= course.credits %></td>
+                    <td><%= course.slot %></td>
+                    <td>
+                        <button onclick="dropCourse('<%= course.course_id %>')">Drop</button>
+                    </td>
+                </tr>
+            <% }) %>
+        </table>
+
+        <h2>Available Courses</h2>
+
+        <table>
+            <tr>
+                <th>Course ID</th>
+                <th>Name</th>
+                <th>Credits</th>
+                <th>Slot</th>
+                <th>Capacity</th>
+                <th>Action</th>
+            </tr>
+            <% available_courses.forEach(course => { %>
+                <tr>
+                    <td><%= course.course_id %></td>
+                    <td><%= course.course_name %></td>
+                    <td><%= course.credits %></td>
+                    <td><%= course.slot %></td>
+                    <td><%= course.capacity %></td>
+                    <td>
+                        <button onclick="registerCourse('<%= course.course_id %>')">Register</button>
+                    </td>
+                </tr>
+            <% }) %>
+        </table>
+    </div>
 </body>
 
 <script>
@@ -50,9 +119,7 @@
         try {
             const res = await fetch('/student/drop', {
                 method:'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({course_id: courseId})
             });
             if (!res.ok) {
@@ -60,35 +127,28 @@
                 showError(err.message);
                 return;
             }
-
             location.reload();
         } catch (err){
             showError("Network Error.");
         }
-
     }
 
     async function registerCourse(courseId){
         try {
             const res = await fetch('/student/register', {
                 method:'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({course_id: courseId})
             });
-            
             if (!res.ok) {
                 const err = await res.json();
                 showError(err.message);
                 return;
             }
-            
-            location.reload();            
+            location.reload();
         } catch (err){
             showError("Network Error");
         }
-
     }
 </script>
 
