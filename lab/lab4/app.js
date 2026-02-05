@@ -215,9 +215,25 @@ app.post('/student/register', isAuthenticated, async (req, res) => {
 
         const totalCredits =
             reg.rows.reduce((s, r) => s + r.credits, 0) + course.credits;
+        
+        if (reg.rows.some(r => r.course_id === course_id)){
+            return res.status(400).json({message: `Course ${course_id} is already registered`});
+        }
 
         if (totalCredits > 24) {
             return res.status(400).json({message: "Credit limit exceeded"});
+        }        
+
+        const enrolledRes = await client.query(
+            'SELECT COUNT(*) as count FROM Registrations WHERE course_id = $1',
+            [course_id]
+        );
+
+        const enrolled = parseInt(enrolledRes.rows[0].count);
+        const capacity = course.capacity;
+
+        if (enrolled >= capacity) {
+            return res.status(400).json({message: "Course is full"});
         }
 
         await client.query(
