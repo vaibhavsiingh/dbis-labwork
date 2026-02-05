@@ -82,7 +82,8 @@
                 const err = await res.json();
                 showError(err.message);
                 return;
-            }            
+            }
+            
             location.reload();            
         } catch (err){
             showError("Network Error");

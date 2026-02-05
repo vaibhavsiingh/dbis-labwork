@@ -7,11 +7,12 @@
 </head>
 
 <body>
-    <h1>Manage Course</h1>
+    <h1>Manage Course: <%=course_id%></h1>
     <a href="/instructor/dashboard">Back to Dashboard</a>
 
     <hr>
-
+    <div id="error-box" style="display:none; color:red;"></div>
+    <div id="warning-box" style="display:none; color:yellow;"></div>
     <!-- Add Student -->
     <h3>Add Student</h3>
     <form onsubmit="addStudent(event)">
@@ -44,6 +45,16 @@
 </body>
 
 <script>
+    function showError(msg) {
+        const box = document.getElementById('error-box');
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
+    function showWarning(msg) {
+        const box = document.getElementById('warning-box');
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
     async function removeStudent(student_id, courseId) {
         try {
             const res = await fetch('/instructor/remove-student', {
@@ -58,13 +69,15 @@
             });
 
             if (!res.ok) {
-                throw new Error('Request Failed');
+                const err = await res.json();
+                showError(err.message);
+                return;
             }
 
             location.reload();
         } catch (err) {
             console.error(err);
-            alert('Failed to remove student');
+            showError('Network error');
         }
     }
 
@@ -90,14 +103,22 @@
                     course_id: courseId
                 })
             });
-            location.reload();
+            
             if (!res.ok) {
-                throw new Error('Request Failed');
+                const err = await res.json();
+                showError(err.message);
+                return;
+            }
+
+            const data = await res.json();
+            if (data.warning) {
+                alert(data.warning);
             }
             
+            location.reload();
         } catch (err) {
             console.error(err);
-            alert('Failed to add student');
+            showError('Network error');
         }
     }
 </script>

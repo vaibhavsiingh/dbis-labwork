@@ -299,7 +299,12 @@ app.get('/instructor/course/:id', isAuthenticated, isInstructor, async (req, res
     const course_id = req.params.id;
     pool = getPool();
     if(!pool) {
-        return res.status(500).send("Database not configured");
+        console.error("Database not configured");
+
+        return res.status(500).json({            
+            message: "Internal server error. Please try again later."
+        });
+
     }
     try{
         const { user_id, username, role } = req.session.user;
@@ -314,7 +319,7 @@ app.get('/instructor/course/:id', isAuthenticated, isInstructor, async (req, res
 
         if (!(current.some(r => r.course_id === course_id))) {
             client.release();
-            return res.status(400).send("Not the instructor of course.");
+            return res.status(400).json("Instructor course mismatch. Contact admin");
         }
 
         const stud = await client.query(
@@ -325,7 +330,7 @@ app.get('/instructor/course/:id', isAuthenticated, isInstructor, async (req, res
         ) 
         const student_info = stud.rows;
         client.release();    
-        console.log("student_info", student_info);
+        
         return res.render('instructor_course', {student_info: student_info, course_id: course_id});
     }
     catch (err){
@@ -343,83 +348,77 @@ app.get('/instructor/course/:id', isAuthenticated, isInstructor, async (req, res
 // 4. Insert into Registrations
 app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, res) => {
     const { username, course_id } = req.body;
-    console.log("api print", username, course_id);
-    pool = getPool();
-    if(!pool){
-        return res.status(500).send("Database not configured");
-    }
-    try{        
-        const client  = await pool.connect();
 
-        const student_id_query = await client.query(
-            'select * from users where role = \'student\' and username = $1',
+    pool = getPool();
+    if (!pool) {
+        console.error("Database not configured");
+        return res.status(500).json({            
+            message: "Internal server error. Please try again later."
+        });
+    }
+
+    const client = await pool.connect();
+    try {
+        const studentRes = await client.query(
+            'SELECT * FROM users WHERE role = \'student\' AND username = $1',
             [username]
         );
-        console.log("student_id_query.rows",student_id_query.rows);
-        if(student_id_query.rows.length === 0){
-            client.release();
-            return res.status(400).send(" Error: Student does not exist.");
-        }
-        
-        
-        const student = student_id_query.rows[0];
-        const student_id = student.user_id;        
 
-        const exist_ = await client.query(
-            'select * from registrations where student_id = $1 and course_id = $2', 
-            [student_id, course_id]);
-
-        console.log("exist_.rows",exist_.rows);
-
-        if(exist_.rows.length !== 0){
-            client.release();
-            return res.status(400).send(" Error: Student already in course.");
+        if (studentRes.rows.length === 0) {
+            return res.status(400).json({ message: "Student does not exist" });
         }
 
-        const course_query = await client.query(
-            'SELECT course_id, credits FROM Courses WHERE course_id = $1', [course_id]
+        const student = studentRes.rows[0];
+
+        const exists = await client.query(
+            'SELECT 1 FROM registrations WHERE student_id = $1 AND course_id = $2',
+            [student.user_id, course_id]
         );
 
-        
-
-        if (course_query.rows.length === 0){
-            client.release();
-            console.log("course_query.rows empty");
-            return res.status(404).send("Course not found");
+        if (exists.rows.length) {
+            return res.status(400).json({ message: "Student already in course" });
         }
 
-        const course = course_query.rows[0];
+        const courseRes = await client.query(
+            'SELECT credits FROM courses WHERE course_id = $1',
+            [course_id]
+        );
+
+        if (!courseRes.rows.length) {
+            return res.status(404).json({ message: "Course not found" });
+        }
 
         const reg = await client.query(
-            `select r.*, c.slot, c.credits 
-             FROM Registrations r 
-             JOIN Courses c ON r.course_id = c.course_id 
-             WHERE r.student_id = $1`, 
-            [student_id]
+            `SELECT c.credits
+             FROM registrations r
+             JOIN courses c ON r.course_id = c.course_id
+             WHERE r.student_id = $1`,
+            [student.user_id]
         );
 
-        
+        const totalCredits = reg.rows.reduce((s, r) => s + r.credits, 0);
+        const warning =
+            totalCredits + courseRes.rows[0].credits > 24
+                ? "Credit limit exceeded (instructor override)"
+                : null;
 
-        const current = reg.rows;
-        console.log("current", current);
-
-        const tot_cred = current.reduce((sum, r) => sum + r.credits, 0);
-        if (tot_cred + course.credits > 24) {
-            // Give Warning and continue                        
-        }
-        
-        const result = await client.query(
-            'INSERT into Registrations (student_id, course_id) VALUES ($1, $2)',
-            [student_id, course_id]
+        await client.query(
+            'INSERT INTO registrations (student_id, course_id) VALUES ($1,$2)',
+            [student.user_id, course_id]
         );
+
+        return res.status(200).json({
+            success: true,
+            warning
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({            
+            message: "Internal server error"
+        });
+    } finally {
         client.release();
-        console.log("Registered a course for a student");
-        return res.redirect(`/instructor/course/${course_id}`);
-                
-    }
-    catch (err){
-        console.log(err);
-        return res.status(500).render('login', {error: 'An error occurred while removing the student'});
     }
 });
 
