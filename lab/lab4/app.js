@@ -378,8 +378,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
             [username]
         );
 
-        if (studentRes.rows.length === 0) {
-            client.release();
+        if (studentRes.rows.length === 0) {            
             return res.status(400).json({ message: "Student does not exist" });
         }
 
@@ -391,7 +390,6 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
         );
 
         if (exists.rows.length) {
-            client.release();
             return res.status(400).json({ message: "Student already in course" });
         }
 
@@ -400,8 +398,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
             [course_id]
         );
 
-        if (!courseRes.rows.length) {
-            client.release();
+        if (!courseRes.rows.length) {            
             return res.status(404).json({ message: "Course not found" });
         }
 
@@ -423,7 +420,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
             'INSERT INTO registrations (student_id, course_id) VALUES ($1,$2)',
             [student.user_id, course_id]
         );
-        client.release();
+                
         return res.status(200).json({
             success: true,
             warning
