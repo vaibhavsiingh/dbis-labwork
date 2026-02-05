@@ -33,7 +33,7 @@ app.use(express.static('public')); // For CSS/Images if needed
 app.set('view engine', 'ejs');
 
 app.use(session({
-    secret: 'your_secret_key',
+    secret: process.env.SESSION_SECRET || 'very_secret_key',
     resave: false,
     saveUninitialized: true,
 }));
@@ -48,10 +48,9 @@ function isAuthenticated(req, res, next) {
 
 function isInstructor(req, res, next) {
     // TODO: Implement check for instructor role
-    if(req.session.user.role !== 'instructor') {
-        return res.status(403).send("Access denied");
-    }
-    next();
+    if (!req.session || !req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'instructor') return res.status(403).render('login', { error: 'Access denied' });
+    next();    
 }
 
 // Function to get or initialize the pool
@@ -202,7 +201,7 @@ app.post('/student/register', isAuthenticated, async (req, res) => {
         const course = courseRes.rows[0];
 
         const reg = await client.query(
-            `SELECT c.slot, c.credits
+            `SELECT r.course_id, c.slot, c.credits
              FROM Registrations r
              JOIN Courses c ON r.course_id = c.course_id
              WHERE r.student_id = $1`,
@@ -241,7 +240,7 @@ app.post('/student/register', isAuthenticated, async (req, res) => {
             [user_id, course_id]
         );
 
-        return res.status(200).send("OK");
+        return res.status(200).json({message: `Course ${course_id} registered successfully`});
     } catch (e) {
         console.error(e);
         return res.status(500).send("Server error");
@@ -269,9 +268,8 @@ app.post('/student/drop', isAuthenticated, async (req, res) => {
             'DELETE FROM Registrations WHERE student_id = $1 AND course_id = $2',
             [user_id, course_id]
         );
-        client.release();
-        console.log("Deleted a course from a students");
-        return res.status(200).send("OK");
+        client.release();        
+        return res.status(200).json({message: `Course ${course_id} dropped successfully`});
     }
     catch (err){
         console.log(err);
@@ -381,6 +379,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
         );
 
         if (studentRes.rows.length === 0) {
+            client.release();
             return res.status(400).json({ message: "Student does not exist" });
         }
 
@@ -392,15 +391,17 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
         );
 
         if (exists.rows.length) {
+            client.release();
             return res.status(400).json({ message: "Student already in course" });
         }
 
-        const courseRes = await client.query(
+        const courseRes = await client.query(            
             'SELECT credits FROM courses WHERE course_id = $1',
             [course_id]
         );
 
         if (!courseRes.rows.length) {
+            client.release();
             return res.status(404).json({ message: "Course not found" });
         }
 
@@ -422,7 +423,7 @@ app.post('/instructor/add-student', isAuthenticated, isInstructor, async (req, r
             'INSERT INTO registrations (student_id, course_id) VALUES ($1,$2)',
             [student.user_id, course_id]
         );
-
+        client.release();
         return res.status(200).json({
             success: true,
             warning
@@ -455,8 +456,7 @@ app.post('/instructor/remove-student', isAuthenticated, isInstructor, async (req
             'DELETE FROM Registrations WHERE student_id = $1 AND course_id = $2',
             [student_id, course_id]
         );
-        client.release();
-        console.log("Removed a student from a course");
+        client.release();        
         return res.redirect(`/instructor/course/${course_id}`);
     }
     catch (err){
