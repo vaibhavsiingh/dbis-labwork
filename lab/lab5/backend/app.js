@@ -88,12 +88,9 @@ app.post('/signup', async (req, res) => {
     // TODO
     const { username, email, password } = req.body;
 
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+   
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const exists = await client.query(
             'SELECT * FROM users WHERE username = $1 OR email = $2',
@@ -129,13 +126,8 @@ app.post('/login', async (req, res) => {
     // TODO
     const { username, password } = req.body;
 
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
-
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
         const result = await client.query(
             'SELECT * FROM Users WHERE username = $1 AND password_hash = $2',
             [username, password]
@@ -200,12 +192,9 @@ app.get('/users/search', checkAuth, async (req, res) => {
     if(!search_){
         return res.status(200).json([]);
     }
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const result = await client.query(
         `SELECT user_id, username FROM users
@@ -226,11 +215,8 @@ app.get('/users/search', checkAuth, async (req, res) => {
 app.post('/friends/add', checkAuth, async (req, res) => {
   // TODO
     const {friend_id} = req.body;
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
-    const client = await pool.connect();
+    
+    const client = await db.connect();
     try {
         await connection.query('BEGIN');
 
@@ -265,12 +251,9 @@ app.post('/friends/add', checkAuth, async (req, res) => {
 app.get('/friends', checkAuth, async (req, res) => {
   // TODO
     const user_id = req.session.user.user_id;
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const result = await client.query(
         `SELECT user_id, username FROM users
@@ -294,11 +277,8 @@ app.post('/groups', checkAuth, async (req, res) => {
     const { name, member_ids } = req.body;
     const created_by = req.session.user.user_id;
 
-    const pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
-    const client = await pool.connect();
+    
+    const client = await db.connect();
     try {
         await client.query('BEGIN');
 
@@ -343,12 +323,9 @@ app.post('/groups', checkAuth, async (req, res) => {
 app.get('/groups', checkAuth, async (req, res) => {
   // TODO
     const user_id = req.session.user.user_id;
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const result = await client.query(
             `SELECT g.group_id, g.name FROM Groups g JOIN GroupMember gm ON g.group_id = gm.group_id
@@ -369,11 +346,9 @@ app.get('/groups/:id', checkAuth, async (req, res) => {
   // TODO
     const group_id = req.params.id;
     const user_id = req.session.user.user_id;
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const memb = await client.query(
             `SELECT 1 FROM groupmember 
@@ -415,14 +390,11 @@ app.get('/groups/:id', checkAuth, async (req, res) => {
 app.post('/expenses', checkAuth, async (req, res) => {
   // TODO
     const { group_id, description, amount, paid_by, splits } = req.body;
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     if (!group_id || !description || !amount || !paid_by || !splits) {
         return res.status(400).json({ message: "Missing Fields" });
     }
-    const client = await pool.connect();
+    const client = await db.connect();
 
     try {
         await client.query('BEGIN');
@@ -471,12 +443,9 @@ app.get('/groups/:id/expenses', checkAuth, async (req, res) => {
     const group_id = req.params.id;
     const user_id = req.session.user.user_id;
 
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const memb = await client.query(
             `SELECT 1 FROM groupmember 
@@ -517,11 +486,8 @@ app.post('/settle', checkAuth, async (req, res) => {
 
     const {to_user, amount} = req.body;
     const user_id = req.session.user.user_id;
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
-    const client = await pool.connect();
+   
+    const client = await db.connect();
 
     try {
         await client.query('BEGIN');
@@ -552,12 +518,9 @@ app.post('/settle', checkAuth, async (req, res) => {
 app.get('/balances', checkAuth, async (req, res) => {
   // TODO
     const user_id = req.session.user.user_id;
-    pool = getPool();
-    if (!pool) {
-        return res.status(500).json({ message: "Database not configured" });
-    }
+    
     try {
-        const client = await pool.connect();
+        const client = await db.connect();
 
         const result = await client.query(
             `SELECT b.other_user_id, u.username, b.amount FROM Balance b JOIN Users u ON u.user_id = b.user_id
