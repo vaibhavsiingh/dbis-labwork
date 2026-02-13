@@ -101,18 +101,22 @@ app.post('/signup', async (req, res) => {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        const hash = await bcrypt.hash(password, 10);
-
-        const result = await client.query(
+        const hash = await bcrypt.hash(password, 10);        
+        console.log("SIGNUP HASH VALUE", hash);
+        const results = await client.query(
             'INSERT INTO users (username, password_hash, email) VALUES($1, $2, $3) RETURNING user_id',
             [username, hash, email]
         );
         client.release();
 
-        
+        if(results.rows.length == 0){
+            console.log("Inserted record.... not actually inserted???");
+            return res.status(400).json({ message: "Server Error" });
+        }
+        const result = results.rows[0];
         return res.status(200).json({
-            user_id: user.user_id,
-            username: user.username 
+            user_id: result.user_id,
+            username: username
         })
 
     } catch (err) {
@@ -125,32 +129,39 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
     // TODO
     const { username, password } = req.body;
-
     try {
         const client = await db.connect();
         const result = await client.query(
-            'SELECT * FROM Users WHERE username = $1 AND password_hash = $2',
-            [username, password]
+            'SELECT * FROM Users WHERE username = $1',
+            [username]
         );
         client.release();
 
         if (result.rows.length > 0) {
             const user = result.rows[0];
-            req.session.user = {
-                user_id: user.user_id,
-                username: user.username
-            };
-            return res.status(200).json({
-                message: "Login successful",
-                user: {
+            const isMatch = await bcrypt.compare(password, user.password_hash);
+            if(isMatch){
+                req.session.user = {
                     user_id: user.user_id,
                     username: user.username
-                }
-            });
+                };
+                return res.status(200).json({
+                    message: "Login successful",
+                    user: {
+                        user_id: user.user_id,
+                        username: user.username
+                    }
+                });
+            }
+            else{
+                console.log("Wrong Password");
+                return res.status(400).json({ message: "Invalid credentials" });
+            }
         } 
         else {
+            console.log("Wrong username");
             return res.status(400).json({ message: "Invalid credentials" });
-        }
+        }   
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "Server Error" });
