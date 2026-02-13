@@ -26,7 +26,15 @@ function App() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       // Implement API call here
+      setLoading(true);
+      const response = await fetch('http://localhost:4000/isLoggedIn');
+      const data = await response.json();
+      if (data.loggedIn){
+        setUser(data.user);
+      }      
+      setLoading(false);
     };
+
     checkLoginStatus();
   }, []);
 
@@ -35,7 +43,9 @@ function App() {
   // 1. Update user state
   // 2. Redirect to dashboard
   const handleLogin = (userData) => {
-    // Implement login logic here
+    console.log(userData);
+    setUser(userData);  
+    navigate('/');
   };
 
   // TODO: Handle logout functionality
@@ -45,6 +55,7 @@ function App() {
   // 3. Redirect to login page
   const handleLogout = async () => {
     // Implement logout logic here
+
   };
 
   // TODO: Show a loading indicator while authentication is being checked
@@ -75,7 +86,7 @@ function App() {
           {/* Login route (only accessible when logged out) */}
           <Route path="/login" element={
             /* Implement conditional routing here */
-            <div />
+            <Login onLogin={handleLogin}/>
           } />
 
           {/* Protected routes (only accessible when logged in) */}
