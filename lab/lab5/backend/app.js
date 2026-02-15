@@ -190,8 +190,14 @@ app.get('/isLoggedIn', (req, res) => {
 // TODO: Implement logout functionality
 app.post('/logout', (req, res) => {
     // TODO
-    req.session.destroy();
-    return req.status(200).json({message : "Logged out"});
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ message: "Logout failed" });
+        }
+
+        res.clearCookie('connect.sid'); // important for express-session
+        return res.status(200).json({ message: "Logged out" });
+    });
 });
 
 // ---------------- FRIENDS ROUTES ----------------
