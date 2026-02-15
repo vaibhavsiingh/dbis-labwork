@@ -41,36 +41,22 @@ function checkAuth(req, res, next) {
 // This function will be used to update balances 
 // while adding expenses and settlements
 async function updateBalance(client, payerId, debtorId, amount) {
-  // TODO
-    const result = await client.query(
-        `UPDATE Balance
-        SET amount = amount + $3
-        WHERE user_id = $1 AND other_user_id = $2`,
-        [payerId, debtorId, amount]
-    );
-    const result2 = await client.query(
-        `UPDATE Balance
-        SET amount = amount - $3
-        WHERE user_id = $1 AND other_user_id = $2`,
-        [debtorId, payerId, amount]
-    );
+  await client.query(
+    `INSERT INTO Balance (user_id, other_user_id, amount)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, other_user_id)
+     DO UPDATE SET amount = Balance.amount + EXCLUDED.amount`,
+    [payerId, debtorId, amount]
+  );
 
-    if (result.rowCount === 0) {
-        await client.query(
-            `INSERT INTO Balance (user_id, other_user_id, amount)
-            VALUES ($1, $2, $3)`,
-            [payerId, debtorId, amount]
-        );
-    }
-    if (result2.rowCount === 0){
-        await client.query(
-            `INSERT INTO Balance (user_id, other_user_id, amount)
-            VALUES ($1, $2, $3)`,
-            [debtorId, payerId, -amount]
-        );
-    }
+  await client.query(
+    `INSERT INTO Balance (user_id, other_user_id, amount)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id, other_user_id)
+     DO UPDATE SET amount = Balance.amount + EXCLUDED.amount`,
+    [debtorId, payerId, -amount]
+  );
 }
-
 // ---------------- AUTH ROUTES ----------------
 
 // TODO: Implement user signup logic
@@ -383,7 +369,7 @@ app.get('/groups/:id', checkAuth, async (req, res) => {
         [group_id]
         );
         const member = await client.query(
-        `SELECT user_id, username FROM users u JOIN groupmember g ON u.user_id = g.user_id
+        `SELECT u.user_id, username FROM users u JOIN groupmember g ON u.user_id = g.user_id
         WHERE group_id = $1`,
         [group_id]
         );

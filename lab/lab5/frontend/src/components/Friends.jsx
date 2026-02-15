@@ -101,10 +101,10 @@ function Friends() {
 
     // TODO: (Optional) Implement settle-up logic per friend
     // - This can redirect to dashboard or open a modal
-    const handleSettle = async (friendId, amount, currency) => {
-        // Optional implementation
+    // const handleSettle = async (friendId, amount, currency) => {
+    //     // Optional implementation
         
-    };
+    // };
 
     return (
         <>

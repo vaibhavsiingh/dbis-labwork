@@ -56,8 +56,12 @@ function App() {
   // 2. Clear user state
   // 3. Redirect to login page
   const handleLogout = async () => {
-    // Implement logout logic here
-
+    await fetch('http://localhost:4000/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    setUser(null);
+    navigate('/login');
   };
 
   // TODO: Show a loading indicator while authentication is being checked
@@ -80,6 +84,9 @@ function App() {
             {/* Dashboard, Groups, Friends */}
             {/* Add logout button */}
           </div>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
         </nav>
       )}
 
@@ -106,7 +113,7 @@ function App() {
       path="/groups"
       element={
         isAuthenticated
-          ? <div />
+          ? <Groups />
           : <Navigate to="/login" replace />
       }
     />
@@ -115,7 +122,7 @@ function App() {
       path="/groups/create"
       element={
         isAuthenticated
-          ? <div />
+          ? <CreateGroup />
           : <Navigate to="/login" replace />
       }
     />
@@ -124,7 +131,7 @@ function App() {
       path="/group/:id"
       element={
         isAuthenticated
-          ? <div />
+          ? <GroupDetails user={user} />
           : <Navigate to="/login" replace />
       }
     />

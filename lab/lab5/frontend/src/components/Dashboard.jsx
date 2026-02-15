@@ -34,11 +34,12 @@ function Dashboard() {
             return response.json();
         })
         .then(data => {
-            setBalances(data || []);
+            setBalances(data || []);            
         })
         .catch(error => {
             console.error('Error fetching balances:', error);
         });
+
 
         fetch('http://localhost:4000/friends', {
             method: 'GET',
@@ -121,9 +122,10 @@ function Dashboard() {
                     <h2>Your Balances</h2>
                     {balances.length > 0 ? (
                         <ul className="balances-list">
+                            {console.log(balances)}
                             {balances.map((balance, index) => (
                                 <li key={index} className={balance.amount > 0 ? 'owed-to-you' : balance.amount < 0 ? 'you-owe' : 'settled'}>
-                                    <span className="friend-name">{balance.friend}</span>
+                                    <span className="friend-name">{balance.username} </span>                                    
                                     <span className="balance-amount">
                                         {balance.amount > 0 
                                             ? `owes you $${Math.abs(balance.amount).toFixed(2)}`
