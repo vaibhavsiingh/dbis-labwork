@@ -23,7 +23,7 @@ function Dashboard() {
     // - Handle failure cases
     const fetchData = () => {
         // Implement logic here
-        fetch('http://localhost:5000/balances', {
+        fetch('http://localhost:4000/balances', {
             method: 'GET',
             credentials: 'include'
         })
@@ -34,13 +34,13 @@ function Dashboard() {
             return response.json();
         })
         .then(data => {
-            setBalances(data.balances || []);
+            setBalances(data || []);
         })
         .catch(error => {
             console.error('Error fetching balances:', error);
         });
 
-        fetch('http://localhost:5000/friends', {
+        fetch('http://localhost:4000/friends', {
             method: 'GET',
             credentials: 'include'
         })
@@ -51,7 +51,7 @@ function Dashboard() {
             return response.json();
         })
         .then(data => {
-            setFriends(data.friends || []);
+            setFriends(data || []);
         })
         .catch(error => {
             console.error('Error fetching friends:', error);
@@ -86,7 +86,7 @@ function Dashboard() {
                 }
                 
                 try {
-                    const response = await fetch('http://localhost:5000/settle', {
+                    const response = await fetch('http://localhost:4000/settle', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

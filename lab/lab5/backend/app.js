@@ -199,9 +199,9 @@ app.post('/logout', (req, res) => {
 // TODO: Search users by username (excluding current user)
 app.get('/users/search', checkAuth, async (req, res) => {
     // TODO
-        const {q} = req.query;
+        const q = req.query.q;
         if(!q){
-                return res.status(200).json([]);
+            return res.status(200).json([]);
         }
         
         try {

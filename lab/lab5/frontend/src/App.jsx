@@ -133,7 +133,7 @@ function App() {
       path="/friends"
       element={
         isAuthenticated
-          ? <div />
+          ? <Friends />
           : <Navigate to="/login" replace />
       }
     />
