@@ -198,27 +198,27 @@ app.post('/logout', (req, res) => {
 
 // TODO: Search users by username (excluding current user)
 app.get('/users/search', checkAuth, async (req, res) => {
-  // TODO
-    const {search_} = req.query;
-    if(!search_){
-        return res.status(200).json([]);
-    }
-    
-    try {
-        const client = await db.connect();
+    // TODO
+        const {q} = req.query;
+        if(!q){
+                return res.status(200).json([]);
+        }
+        
+        try {
+                const client = await db.connect();
 
-        const result = await client.query(
-        `SELECT user_id, username FROM users
-        WHERE username ILIKE $1 AND user_id <> $2`,
-        [`%${q}%`, req.session.user.user_id]
-        );
-        client.release();
-        return res.status(200).json(result.rows);
-    }
-    catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Server Error" });
-    }
+                const result = await client.query(
+                `SELECT user_id, username FROM users
+                WHERE username ILIKE $1 AND user_id <> $2`,
+                [`%${q}%`, req.session.user.user_id]
+                );
+                client.release();
+                return res.status(200).json(result.rows);
+        }
+        catch (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Server Error" });
+        }
 
 });
 
@@ -229,7 +229,7 @@ app.post('/friends/add', checkAuth, async (req, res) => {
     
     const client = await db.connect();
     try {
-        await connection.query('BEGIN');
+        await client.query('BEGIN');
 
         const result = await client.query(
         `SELECT user_id FROM users WHERE user_id = $1`,
@@ -240,7 +240,7 @@ app.post('/friends/add', checkAuth, async (req, res) => {
                 `INSERT INTO friend (user_id, friend_id) VALUES ($1, $2), ($2, $1)`,
                 [req.session.user.user_id, friend_id]
             );
-            await connection.query('COMMIT');
+            await client.query('COMMIT');
             client.release();
             return res.status(200).json({message: "Friend added"});
         }
@@ -251,7 +251,7 @@ app.post('/friends/add', checkAuth, async (req, res) => {
         
     }
     catch (err) {
-        await connection.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(err);
         client.release();
         return res.status(500).json({ message: "Server Error" });
@@ -323,7 +323,7 @@ app.post('/groups', checkAuth, async (req, res) => {
      
     }
     catch (err) {
-        await connection.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(err);
         client.release();
         return res.status(500).json({ message: "Server Error" });
