@@ -17,7 +17,7 @@ function App() {
   // loading should indicate whether auth status is being checked
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const isAuthenticated = user !== null;
   // TODO: Implement authentication status check
   // On component mount:
   // 1. Make an API call to check if the user is logged in
@@ -27,7 +27,9 @@ function App() {
     const checkLoginStatus = async () => {
       // Implement API call here
       setLoading(true);
-      const response = await fetch('http://localhost:4000/isLoggedIn');
+      const response = await fetch('http://localhost:4000/isLoggedIn',{
+        credentials: 'include'
+      });
       const data = await response.json();
       if (data.loggedIn){
         setUser(data.user);
@@ -60,8 +62,9 @@ function App() {
 
   // TODO: Show a loading indicator while authentication is being checked
   if (loading) {
-    return <div>{/* Implement loading UI here */}</div>;
+    return <div>i am loading bitch</div>;
   }
+
 
   return (
     <div className="app">
@@ -90,11 +93,50 @@ function App() {
           } />
 
           {/* Protected routes (only accessible when logged in) */}
-          <Route path="/" element={<div />} />
-          <Route path="/groups" element={<div />} />
-          <Route path="/groups/create" element={<div />} />
-          <Route path="/group/:id" element={<div />} />
-          <Route path="/friends" element={<div />} />
+          <Route
+      path="/"
+      element={
+        isAuthenticated
+          ? <Dashboard user={user} />
+          : <Navigate to="/login" replace />
+      }
+    />
+
+    <Route
+      path="/groups"
+      element={
+        isAuthenticated
+          ? <div />
+          : <Navigate to="/login" replace />
+      }
+    />
+
+    <Route
+      path="/groups/create"
+      element={
+        isAuthenticated
+          ? <div />
+          : <Navigate to="/login" replace />
+      }
+    />
+
+    <Route
+      path="/group/:id"
+      element={
+        isAuthenticated
+          ? <div />
+          : <Navigate to="/login" replace />
+      }
+    />
+
+    <Route
+      path="/friends"
+      element={
+        isAuthenticated
+          ? <div />
+          : <Navigate to="/login" replace />
+      }
+    />
         </Routes>
       </div>
     </div>

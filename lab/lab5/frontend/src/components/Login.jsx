@@ -38,6 +38,7 @@ function Login({ onLogin }) {
             try {
                 const response = await fetch('http://localhost:4000/signup', {
                     method: 'POST',
+                    credentials: "include",
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password, email })
                 });
@@ -57,6 +58,7 @@ function Login({ onLogin }) {
                 console.log("something");
                 const response = await fetch('http://localhost:4000/login', {
                     method: 'POST',
+                    credentials: "include",
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });

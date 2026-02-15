@@ -534,7 +534,7 @@ app.get('/balances', checkAuth, async (req, res) => {
         const client = await db.connect();
 
         const result = await client.query(
-            `SELECT b.other_user_id, u.username, b.amount FROM Balance b JOIN Users u ON u.user_id = b.user_id
+            `SELECT b.other_user_id, u.username, b.amount FROM Balance b JOIN Users u ON u.user_id = b.other_user_id
             WHERE b.user_id = $1`,
             [user_id]
         );

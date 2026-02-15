@@ -23,11 +23,45 @@ function Dashboard() {
     // - Handle failure cases
     const fetchData = () => {
         // Implement logic here
+        fetch('http://localhost:5000/balances', {
+            method: 'GET',
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch balances');
+            }
+            return response.json();
+        })
+        .then(data => {
+            setBalances(data.balances || []);
+        })
+        .catch(error => {
+            console.error('Error fetching balances:', error);
+        });
+
+        fetch('http://localhost:5000/friends', {
+            method: 'GET',
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch friends');
+            }
+            return response.json();
+        })
+        .then(data => {
+            setFriends(data.friends || []);
+        })
+        .catch(error => {
+            console.error('Error fetching friends:', error);
+        });
     };
 
     // TODO: Fetch dashboard data on component mount
     useEffect(() => {
         // Call fetchData here
+        fetchData();
     }, []);
 
     // TODO: Implement handleSettleUp function
@@ -39,18 +73,88 @@ function Dashboard() {
     // - Show appropriate success/error messages
     const handleSettleUp = async (e) => {
         // Implement logic here
+        e.preventDefault();
+                
+                if (!settleTo || !settleAmount) {
+                    alert('Please select a friend and enter an amount');
+                    return;
+                }
+                
+                if (parseFloat(settleAmount) <= 0) {
+                    alert('Please enter a valid amount greater than 0');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('http://localhost:5000/settle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            to_user: settleTo,
+                            amount: parseFloat(settleAmount)
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to settle up');
+                    }
+                    
+                    alert('Settlement successful!');
+                    setSettleTo('');
+                    setSettleAmount('');
+                    fetchData();
+                } catch (error) {
+                    console.error('Error settling up:', error);
+                    alert('Failed to settle up. Please try again.');
+                }
     };
 
     return (
         <>
-            {/*
-              TODO: Implement JSX for Dashboard page
-              - Section to display net balances
-              - Section with settle-up form
-              - Dropdown to select friend
-              - Input for settlement amount
-              - Quick links to Groups and Friends pages
-            */}
+            <div className="dashboard-container">   
+                <h1>Dashboard</h1>
+                
+                <div className="balances-section">
+                    <h2>Your Balances</h2>
+                    {balances.length > 0 ? (
+                        <ul className="balances-list">
+                            {balances.map((balance, index) => (
+                                <li key={index} className={balance.amount > 0 ? 'owed-to-you' : balance.amount < 0 ? 'you-owe' : 'settled'}>
+                                    <span className="friend-name">{balance.friend}</span>
+                                    <span className="balance-amount">
+                                        {balance.amount > 0 
+                                            ? `owes you $${Math.abs(balance.amount).toFixed(2)}`
+                                            : balance.amount < 0 
+                                            ? `you owe $${Math.abs(balance.amount).toFixed(2)}`
+                                            : 'settled up'}
+                                    </span>
+                                    {balance.amount < 0 && (
+                                        <button 
+                                            className="settle-button"
+                                            onClick={() => handleSettleUp(balance.friend, Math.abs(balance.amount))}
+                                        >
+                                            Settle Up
+                                        </button>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No balances to display</p>
+                    )}
+                </div>
+
+                <div className="quick-links">
+                    <h2>Quick Links</h2>
+                    <div className="links-container">
+                        <Link to="/groups" className="link-button">View Groups</Link>
+                        <Link to="/friends" className="link-button">Manage Friends</Link>
+                    </div>
+                </div>
+            </div>
         </>
     );
 }
