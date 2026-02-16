@@ -13,6 +13,7 @@ function GroupDetails({ user }) {
     const [group, setGroup] = useState(null);
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
+    const [waitingText, setWaitingText] = useState("Loading group details...");
 
     // TODO: Add Expense form state
     // - Description
@@ -37,31 +38,40 @@ function GroupDetails({ user }) {
         // - Fetch expenses using GET /groups/:id/expenses
         // - Update group, members, and expenses state
         // - Set default paidBy to current user if applicable
-        const fetchData = () => {
+        const fetchData = async () => {
             // Implement logic here
             try {
-                fetch(`http://localhost:4000/groups/${id}`, {
+                const groupRes = await fetch(`http://localhost:4000/groups/${id}`, {
                     credentials: 'include'
-                })
-                .then(groupRes => groupRes.json())
-                .then(groupData => {
-                    setGroup(groupData?.group || null);
-                    setMembers(groupData.members || []);
                 });
+                const groupData = await groupRes.json();
+                if (!groupRes.ok) {
+                    setGroup(null);
+                    setMembers([]);
+                    setWaitingText(groupData?.message || 'Group not found');
+                    return;
+                }
 
-                fetch(`http://localhost:4000/groups/${id}/expenses`, {
+                setGroup(groupData?.group || null);
+                setMembers(groupData.members || []);
+
+                const expensesRes = await fetch(`http://localhost:4000/groups/${id}/expenses`, {
                     credentials: 'include'
-                })
-                .then(expensesRes => expensesRes.json())
-                .then(expensesData => {
-                    setExpenses(expensesData);
                 });
+                const expensesData = await expensesRes.json();
+                if (!expensesRes.ok) {
+                    setWaitingText(expensesData?.message || 'Failed to load expenses');
+                    setExpenses([]);
+                    return;
+                }
+                setExpenses(expensesData);
 
                 if (user && !paidBy) {
-                setPaidBy(user.user_id);
+                    setPaidBy(user.user_id);
                 }
             } catch (error) {
                 console.error('Error fetching group data:', error);
+                setWaitingText('Group not found');
             }
         };
         
@@ -196,7 +206,7 @@ function GroupDetails({ user }) {
     return (
         <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
             {!group ? (
-                <p>Loading group details...</p>
+                <p>{waitingText} </p>
             ) : (
                 <>
                     <h1>{group.group_name}</h1>
