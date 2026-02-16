@@ -31,9 +31,9 @@ app.use(session({
 // Redirect unauthenticated users to the login page with respective status code
 function checkAuth(req, res, next) {
   // TODO
-  if(!req.session.user || !req.session) {
-      return res.status(500).redirect('/login');
-  }
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
   next();
 }
 
@@ -100,10 +100,15 @@ app.post('/signup', async (req, res) => {
             return res.status(400).json({ message: "Server Error" });
         }
         const result = results.rows[0];
+        req.session.user = {
+            user_id: result.user_id,
+            username: username
+        };
+
         return res.status(200).json({
             user_id: result.user_id,
             username: username
-        })
+        });
 
     } catch (err) {
         console.error(err);
