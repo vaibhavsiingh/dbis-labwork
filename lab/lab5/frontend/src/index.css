@@ -1,68 +1,212 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+* {
+	box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+	margin: 0;
+	font-family: system-ui, sans-serif;
+	color: #111;
+	background: #f7f7f7;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#root {
+	min-height: 100vh;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+}
+
+form {
+	width: 100%;
+	max-width: 360px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	display: grid;
+	gap: 10px;
+}
+
+label {
+	font-size: 0.9rem;
+	color: #333;
+}
+
+input {
+	padding: 10px 12px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 1rem;
+}
+
+input:focus {
+	outline: none;
+	border-color: #666;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+	padding: 10px 12px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	background: #f0f0f0;
+	cursor: pointer;
+	font-size: 1rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button[type="submit"] {
+	background: #222;
+	color: #fff;
+	border-color: #222;
+}
+
+button:hover {
+	filter: brightness(0.96);
+}
+
+form > div {
+	color: #b00020;
+	font-size: 0.9rem;
+}
+
+.dashboard-container {
+	width: 100%;
+	max-width: 720px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	display: grid;
+	gap: 16px;
+}
+
+.balances-section h2,
+.quick-links h2 {
+	margin: 0 0 8px;
+	font-size: 1.1rem;
+}
+
+.balances-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.balances-list li {
+	border: 1px solid #e3e3e3;
+	border-radius: 6px;
+	padding: 10px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.friend-name {
+	font-weight: 600;
+}
+
+.balance-amount {
+	font-size: 0.95rem;
+	color: #333;
+}
+
+.owed-to-you {
+	background: #f3faf4;
+	border-color: #cfe8d1;
+}
+
+.you-owe {
+	background: #fff6f6;
+	border-color: #f1c8c8;
+}
+
+.settled {
+	background: #f7f7f7;
+}
+
+.settle-button {
+	padding: 6px 10px;
+	font-size: 0.9rem;
+	border-radius: 6px;
+}
+
+.links-container {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.link-button {
+	display: inline-block;
+	padding: 8px 12px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	background: #f0f0f0;
+	color: #111;
+	text-decoration: none;
+}
+
+.link-button:hover {
+	filter: brightness(0.96);
+}
+
+.link-button.primary {
+	background: #222;
+	color: #fff;
+	border-color: #222;
+}
+
+.groups-container {
+	width: 100%;
+	max-width: 800px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	display: grid;
+	gap: 16px;
+}
+
+.groups-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.groups-header h1 {
+	margin: 0;
+}
+
+.muted {
+	color: #666;
+	font-style: italic;
+}
+
+.groups-list {
+	display: grid;
+	gap: 12px;
+}
+
+.group-card {
+	padding: 14px 16px;
+	border: 1px solid #eee;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.group-card:focus {
+	outline: 2px solid #666;
+	outline-offset: 2px;
+}
+
+.group-name {
+	font-weight: 600;
+}
+
+.group-meta {
+	color: #666;
+	font-size: 0.9rem;
 }

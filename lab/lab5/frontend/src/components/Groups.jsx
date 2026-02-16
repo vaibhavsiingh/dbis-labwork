@@ -40,28 +40,21 @@ function Groups() {
     }, []);
 
     return (
-        <div className="groups-container" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1 style={{ margin: 0 }}>Groups</h1>
+        <div className="groups-container">
+            <div className="groups-header">
+                <h1>Groups</h1>
                 <Link
                     to="/groups/create"
-                    style={{
-                        padding: '10px 16px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        textDecoration: 'none'
-                    }}
+                    className="link-button primary"
                 >
                     Create New Group
                 </Link>
             </div>
 
             {groups.length === 0 ? (
-                <p style={{ color: '#666', fontStyle: 'italic' }}>No groups yet. Create one to get started.</p>
+                <p className="muted">No groups yet. Create one to get started.</p>
             ) : (
-                <div style={{ display: 'grid', gap: '12px' }}>
+                <div className="groups-list">
                     {groups.map(group => (
                         <div
                             key={group.group_id}
@@ -73,15 +66,10 @@ function Groups() {
                                     navigate(`/group/${group.group_id}`);
                                 }
                             }}
-                            style={{
-                                padding: '14px 16px',
-                                border: '1px solid #eee',
-                                borderRadius: '6px',
-                                cursor: 'pointer',                                
-                            }}
+                            className="group-card"
                         >
-                            <div style={{ fontWeight: 600 }}>{group.name}</div>
-                            <div style={{ color: '#666', fontSize: '14px' }}>Group ID: {group.group_id}</div>
+                            <div className="group-name">{group.name}</div>
+                            <div className="group-meta">Group ID: {group.group_id}</div>
                         </div>
                     ))}
                 </div>
