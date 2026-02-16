@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 function GroupDetails({ user }) {
 
@@ -204,16 +204,22 @@ function GroupDetails({ user }) {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
+        <div className="group-details-container">
+            <div className="group-details-top">
+                <Link to="/groups" className="link-button">Back to Groups</Link>
+            </div>
+
             {!group ? (
-                <p>{waitingText} </p>
+                <p className="muted">{waitingText}</p>
             ) : (
                 <>
-                    <h1>{group.group_name}</h1>
-                    
-                    <div style={{ marginBottom: '30px' }}>
+                    <div className="group-details-header">
+                        <h1>{group.group_name}</h1>
+                    </div>
+
+                    <div className="group-section">
                         <h2>Add Expense</h2>
-                        <form onSubmit={handleAddExpense} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px' }}>
+                        <form onSubmit={handleAddExpense} className="expense-form">
                             <input
                                 type="text"
                                 placeholder="Description (e.g., Dinner, Taxi)"
@@ -235,44 +241,46 @@ function GroupDetails({ user }) {
                                     </option>
                                 ))}
                             </select>
-                            <div style={{ border: '1px solid #ccc', padding: '10px' }}>
+                            <div className="split-box">
                                 <p>Split with:</p>
-                                {members.map(member => (
-                                    <label key={member.user_id} style={{ display: 'block', marginBottom: '5px' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={splitWith.includes(member.user_id)}
-                                            onChange={() => toggleSplitMember(member.user_id)}
-                                        />
-                                        {member.username}
-                                    </label>
-                                ))}
+                                <div className="split-list">
+                                    {members.map(member => (
+                                        <label key={member.user_id} className="split-item">
+                                            <input
+                                                type="checkbox"
+                                                checked={splitWith.includes(member.user_id)}
+                                                onChange={() => toggleSplitMember(member.user_id)}
+                                            />
+                                            {member.username}
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
                             <button type="submit">Add Expense</button>
                         </form>
                     </div>
 
-                    <div>
+                    <div className="group-section">
                         <h2>Expense History</h2>
                         {expenses.length === 0 ? (
-                            <p>No expenses yet</p>
+                            <p className="muted">No expenses yet</p>
                         ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <table className="expense-table">
                                 <thead>
-                                    <tr style={{ borderBottom: '2px solid #ddd' }}>
-                                        <th style={{ textAlign: 'left', padding: '10px' }}>Description</th>
-                                        <th style={{ textAlign: 'left', padding: '10px' }}>Amount</th>
-                                        <th style={{ textAlign: 'left', padding: '10px' }}>Paid By</th>
-                                        <th style={{ textAlign: 'left', padding: '10px' }}>Date</th>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Paid By</th>
+                                        <th>Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {[...expenses].reverse().map(expense => (
-                                        <tr key={expense.expense_id} style={{ borderBottom: '1px solid #ddd' }}>
-                                            <td style={{ padding: '10px' }}>{expense.description}</td>
-                                            <td style={{ padding: '10px' }}>${parseFloat(expense.amount).toFixed(2)}</td>
-                                            <td style={{ padding: '10px' }}>{expense.paid_by_name}</td>
-                                            <td style={{ padding: '10px' }}>{new Date(expense.created_at).toLocaleDateString()}</td>
+                                        <tr key={expense.expense_id}>
+                                            <td>{expense.description}</td>
+                                            <td>${parseFloat(expense.amount).toFixed(2)}</td>
+                                            <td>{expense.paid_by_name}</td>
+                                            <td>{new Date(expense.created_at).toLocaleDateString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>

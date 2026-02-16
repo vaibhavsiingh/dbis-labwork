@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function Friends() {
 
@@ -115,105 +116,71 @@ function Friends() {
               - Add Friend button for search results
               - Show empty-state message when no friends exist
             */}
-            <div className="friends-container" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-                <h1>Friends</h1>
+            <div className="friends-container">
+                <div className="friends-top">
+                    <Link to="/" className="link-button">Back to Dashboard</Link>
+                </div>
+
+                <div className="friends-header">
+                    <h1>Friends</h1>
+                    <p className="muted">Search and add people to split expenses.</p>
+                </div>
                 
                 {/* Search Section */}
-                <div className="search-section" style={{ marginBottom: '30px' }}>
+                <div className="search-section">
                     <h2>Search Users</h2>
-                    <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                    <form onSubmit={handleSearch} className="search-form">
                         <input
                             type="text"
                             placeholder="Search by username..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ 
-                                flex: 1, 
-                                padding: '10px', 
-                                border: '1px solid #ccc', 
-                                borderRadius: '4px' 
-                            }}
+                            className="search-input"
                         />
-                        <button 
-                            type="submit"
-                            style={{ 
-                                padding: '10px 20px', 
-                                backgroundColor: '#007bff', 
-                                color: 'white', 
-                                border: 'none', 
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        >
+                        <button type="submit" className="link-button primary">
                             Search
                         </button>
                     </form>
                     
                     {/* Search Results */}
-                                        {searchResults.length > 0 && (
-                                            <div className="search-results">
-                                                <h3>Search Results:</h3>
-                                                <ul style={{ listStyle: 'none', padding: 0 }}>
-                                                    {searchResults.map(user => {
-                                                        const isFriend = friends.some(friend => friend.user_id === user.user_id);
-                                                        return (
-                                                            <li 
-                                                                key={user.user_id} 
-                                                                style={{ 
-                                                                    display: 'flex', 
-                                                                    justifyContent: 'space-between', 
-                                                                    alignItems: 'center',
-                                                                    padding: '10px',
-                                                                    border: '1px solid #eee',
-                                                                    marginBottom: '5px',
-                                                                    borderRadius: '4px'
-                                                                }}
-                                                            >
-                                                                <span>{user.username}</span>
-                                                                {isFriend ? (
-                                                                    <span style={{ color: '#28a745' }}>Already Added</span>
-                                                                ) : (
-                                                                    <button
-                                                                        onClick={() => addFriend(user.user_id)}
-                                                                        style={{
-                                                                            padding: '5px 15px',
-                                                                            backgroundColor: '#28a745',
-                                                                            color: 'white',
-                                                                            border: 'none',
-                                                                            borderRadius: '4px',
-                                                                            cursor: 'pointer'
-                                                                        }}
-                                                                    >
-                                                                        Add Friend
-                                                                    </button>
-                                                                )}
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
+                    {searchResults.length > 0 && (
+                        <div className="search-results">
+                            <h3>Search Results:</h3>
+                            <ul className="result-list">
+                                {searchResults.map(user => {
+                                    const isFriend = friends.some(friend => friend.user_id === user.user_id);
+                                    return (
+                                        <li key={user.user_id} className="result-item">
+                                            <span>{user.username}</span>
+                                            {isFriend ? (
+                                                <span className="tag">Already Added</span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => addFriend(user.user_id)}
+                                                    className="link-button success"
+                                                >
+                                                    Add Friend
+                                                </button>
+                                            )}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    )}
+                </div>
 
                                     {/* Friends List Section */}
                 <div className="friends-list-section">
                     <h2>Your Friends</h2>
                     {friends.length === 0 ? (
-                        <p style={{ color: '#666', fontStyle: 'italic' }}>
+                        <p className="muted">
                             No friends yet. Search and add friends above!
                         </p>
                     ) : (
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                        <ul className="friends-list">
                             {friends.map(friend => (
-                                <li 
-                                    key={friend.user_id}
-                                    style={{
-                                        padding: '15px',
-                                        border: '1px solid #ddd',
-                                        marginBottom: '10px',
-                                        borderRadius: '4px'                        
-                                    }}
-                                >
+                                <li key={friend.user_id} className="friend-item">
                                     <strong>{friend.username}</strong>
                                 </li>
                             ))}

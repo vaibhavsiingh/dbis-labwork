@@ -169,11 +169,21 @@ form > div {
 	gap: 16px;
 }
 
-.groups-header {
+.groups-top {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
+}
+
+.groups-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.groups-header {
+	display: grid;
+	gap: 4px;
 }
 
 .groups-header h1 {
@@ -209,4 +219,220 @@ form > div {
 .group-meta {
 	color: #666;
 	font-size: 0.9rem;
+}
+
+.friends-container {
+	width: 100%;
+	max-width: 800px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	display: grid;
+	gap: 16px;
+}
+
+.friends-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.friends-header {
+	display: grid;
+	gap: 4px;
+}
+
+.friends-header h1 {
+	margin: 0;
+}
+
+.search-section h2,
+.friends-list-section h2 {
+	margin: 0 0 8px;
+	font-size: 1.1rem;
+}
+
+.search-form {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.search-input {
+	flex: 1;
+}
+
+.search-results h3 {
+	margin: 0 0 8px;
+	font-size: 1rem;
+}
+
+.result-list,
+.friends-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	gap: 8px;
+}
+
+.result-item,
+.friend-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 12px;
+	border: 1px solid #eee;
+	border-radius: 6px;
+}
+
+.tag {
+	color: #1a7f37;
+	font-size: 0.9rem;
+}
+
+.link-button.success {
+	background: #1a7f37;
+	color: #fff;
+	border-color: #1a7f37;
+}
+
+.group-details-container {
+	width: 100%;
+	max-width: 1000px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	display: grid;
+	gap: 16px;
+}
+
+.group-details-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.group-details-header h1 {
+	margin: 0;
+}
+
+.group-section h2 {
+	margin: 0 0 8px;
+	font-size: 1.1rem;
+}
+
+.expense-form {
+	max-width: 420px;
+}
+
+.expense-form select {
+	padding: 10px 12px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 1rem;
+}
+
+.split-box {
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	padding: 10px;
+	display: grid;
+	gap: 8px;
+}
+
+.split-box p {
+	margin: 0;
+}
+
+.split-list {
+	display: grid;
+	gap: 6px;
+}
+
+.split-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.expense-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.expense-table th,
+.expense-table td {
+	text-align: left;
+	padding: 10px;
+	border-bottom: 1px solid #ddd;
+}
+
+.expense-table thead tr {
+	border-bottom: 2px solid #ddd;
+}
+
+.create-group-container {
+	width: 100%;
+	max-width: 800px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	display: grid;
+	gap: 16px;
+}
+
+.create-group-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.create-group-header {
+	display: grid;
+	gap: 4px;
+}
+
+.create-group-header h1 {
+	margin: 0;
+}
+
+.create-group-form {
+	max-width: 520px;
+}
+
+.field {
+	display: grid;
+	gap: 8px;
+}
+
+.field h2 {
+	margin: 0 0 4px;
+	font-size: 1.1rem;
+}
+
+.member-list {
+	display: grid;
+	gap: 8px;
+}
+
+.member-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border: 1px solid #eee;
+	border-radius: 6px;
+}
+
+.form-actions {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
 }

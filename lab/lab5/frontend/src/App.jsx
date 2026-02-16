@@ -30,7 +30,7 @@ function App() {
       const response = await fetch('http://localhost:4000/isLoggedIn',{
         credentials: 'include'
       });
-      const data = await response.json();
+      const data = await response.json();      
       if (data.loggedIn){
         setUser(data.user);
       }      
@@ -66,7 +66,7 @@ function App() {
 
   // TODO: Show a loading indicator while authentication is being checked
   if (loading) {
-    return <div>i am loading bitch</div>;
+    return <div>Loading...</div>;
   }
 
 

@@ -41,14 +41,21 @@ function Groups() {
 
     return (
         <div className="groups-container">
+            <div className="groups-top">
+                <Link to="/" className="link-button">Back to Dashboard</Link>
+                <div className="groups-actions">
+                    <Link
+                        to="/groups/create"
+                        className="link-button primary"
+                    >
+                        Create New Group
+                    </Link>
+                </div>
+            </div>
+
             <div className="groups-header">
                 <h1>Groups</h1>
-                <Link
-                    to="/groups/create"
-                    className="link-button primary"
-                >
-                    Create New Group
-                </Link>
+                <p className="muted">Pick a group to view expenses and balances.</p>
             </div>
 
             {groups.length === 0 ? (

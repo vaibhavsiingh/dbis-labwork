@@ -90,52 +90,38 @@ function CreateGroup() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1 style={{ margin: 0 }}>Create Group</h1>
-                <Link to="/groups" style={{ textDecoration: 'none', color: '#007bff' }}>Back to Groups</Link>
+        <div className="create-group-container">
+            <div className="create-group-top">
+                <Link to="/groups" className="link-button">Back to Groups</Link>
             </div>
 
-            <form onSubmit={handleCreateGroup}>
-                <div style={{ marginBottom: '20px' }}>
-                    <label htmlFor="group-name" style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>
-                        Group Name
-                    </label>
+            <div className="create-group-header">
+                <h1>Create Group</h1>
+                <p className="muted">Pick a name and add friends to get started.</p>
+            </div>
+
+            <form onSubmit={handleCreateGroup} className="create-group-form">
+                <div className="field">
+                    <label htmlFor="group-name">Group Name</label>
                     <input
                         id="group-name"
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Trip to Goa"
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            border: '1px solid #ccc',
-                            borderRadius: '4px'
-                        }}
                     />
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                    <h2 style={{ marginBottom: '10px' }}>Select Members</h2>
+                <div className="field">
+                    <h2>Select Members</h2>
                     {friends.length === 0 ? (
-                        <p style={{ color: '#666' }}>
+                        <p className="muted">
                             You have no friends yet. <Link to="/friends">Add friends</Link> to create a group.
                         </p>
                     ) : (
-                        <div style={{ display: 'grid', gap: '8px' }}>
+                        <div className="member-list">
                             {friends.map(friend => (
-                                <label
-                                    key={friend.user_id}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px 10px',
-                                        border: '1px solid #eee',
-                                        borderRadius: '4px'
-                                    }}
-                                >
+                                <label key={friend.user_id} className="member-item">
                                     <input
                                         type="checkbox"
                                         checked={selectedFriends.includes(friend.user_id)}
@@ -148,32 +134,11 @@ function CreateGroup() {
                     )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                        type="submit"
-                        style={{
-                            padding: '10px 16px',
-                            backgroundColor: '#28a745',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
+                <div className="form-actions">
+                    <button type="submit" className="link-button success">
                         Create Group
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/groups')}
-                        style={{
-                            padding: '10px 16px',
-                            backgroundColor: '#6c757d',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
+                    <button type="button" onClick={() => navigate('/groups')}>
                         Cancel
                     </button>
                 </div>
