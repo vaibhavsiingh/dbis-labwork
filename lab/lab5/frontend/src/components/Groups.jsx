@@ -77,8 +77,7 @@ function Groups() {
                                 padding: '14px 16px',
                                 border: '1px solid #eee',
                                 borderRadius: '6px',
-                                cursor: 'pointer',
-                                backgroundColor: '#fff'
+                                cursor: 'pointer',                                
                             }}
                         >
                             <div style={{ fontWeight: 600 }}>{group.name}</div>

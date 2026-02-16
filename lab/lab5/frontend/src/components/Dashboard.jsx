@@ -72,46 +72,42 @@ function Dashboard() {
     //   { to_user, amount }
     // - Refresh balances on success
     // - Show appropriate success/error messages
-    const handleSettleUp = async (e) => {
-        // Implement logic here
-        e.preventDefault();
-                
-                if (!settleTo || !settleAmount) {
-                    alert('Please select a friend and enter an amount');
-                    return;
-                }
-                
-                if (parseFloat(settleAmount) <= 0) {
-                    alert('Please enter a valid amount greater than 0');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch('http://localhost:4000/settle', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                            to_user: settleTo,
-                            amount: parseFloat(settleAmount)
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to settle up');
-                    }
-                    
-                    alert('Settlement successful!');
-                    setSettleTo('');
-                    setSettleAmount('');
-                    fetchData();
-                } catch (error) {
-                    console.error('Error settling up:', error);
-                    alert('Failed to settle up. Please try again.');
-                }
+    const handleSettleUp = async (toUser, amount) => {
+        if (!toUser || !amount) {
+            alert('Invalid settlement data');
+            return;
+        }
+
+        if (amount <= 0) {
+            alert('Please enter a valid amount greater than 0');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:4000/settle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    to_user: toUser,
+                    amount: amount
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to settle up');
+            }
+
+            alert('Settlement successful!');
+            fetchData();
+        } catch (error) {
+            console.error('Error settling up:', error);
+            alert('Failed to settle up. Please try again.');
+        }
     };
+
 
     return (
         <>
@@ -136,7 +132,7 @@ function Dashboard() {
                                     {balance.amount < 0 && (
                                         <button 
                                             className="settle-button"
-                                            onClick={() => handleSettleUp(balance.friend, Math.abs(balance.amount))}
+                                            onClick={() => handleSettleUp(balance.other_user_id, Math.abs(balance.amount))}
                                         >
                                             Settle Up
                                         </button>

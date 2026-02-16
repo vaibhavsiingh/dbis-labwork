@@ -199,7 +199,7 @@ function Friends() {
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                             {friends.map(friend => (
                                 <li 
-                                    key={friend.id}
+                                    key={friend.user_id}
                                     style={{
                                         padding: '15px',
                                         border: '1px solid #ddd',
