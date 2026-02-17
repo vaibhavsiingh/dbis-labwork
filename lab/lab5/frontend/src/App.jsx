@@ -104,7 +104,7 @@ function App() {
       path="/"
       element={
         isAuthenticated
-          ? <Dashboard user={user} />
+          ? <Dashboard user={user.username} />
           : <Navigate to="/login" replace />
       }
     />

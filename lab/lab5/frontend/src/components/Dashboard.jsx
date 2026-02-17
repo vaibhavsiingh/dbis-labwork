@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-function Dashboard() {
+function Dashboard({ user }) {
 
     // TODO: Use useState to manage:
     // 1. User balances
@@ -113,7 +113,7 @@ function Dashboard() {
         <>
             <div className="dashboard-container">   
                 <h1>Dashboard</h1>
-                
+                Hello, {user}
                 <div className="balances-section">
                     <h2>Your Balances</h2>
                     {balances.length > 0 ? (
