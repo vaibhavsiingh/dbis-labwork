@@ -1,0 +1,6 @@
+export PGUSER=yourusername
+export PGPASSWORD=yourpassword
+export PGHOST=localhost
+export PGPORT=5432
+export PGDATABASE=yourdatabase
+export SESSION_SECRET=your_secret_key
