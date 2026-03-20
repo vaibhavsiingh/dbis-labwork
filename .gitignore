@@ -2,3 +2,4 @@ lectures/
 node_modules/
 .env
 *.zip
+venv
