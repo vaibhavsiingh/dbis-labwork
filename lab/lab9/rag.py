@@ -10,7 +10,7 @@ OLLAMA_EMBED_URL = "http://localhost:11434/api/embeddings"
 OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
 
 # Choose the Ollama model used in model.py
-MODEL_NAME = ""  # e.g. "smollm2:135m" 
+MODEL_NAME = "smollm2:135m"  # e.g. "smollm2:135m" 
 
 def fetch_similar_rows(query_embedding, top_k=5):
     """
@@ -18,9 +18,23 @@ def fetch_similar_rows(query_embedding, top_k=5):
     top_k most semantically similar movie overviews using pgvector's
     L2 distance operator (<->). Experiment with other operators.
     """
-
     # TODO: Implement this function
-    pass
+    conn = psycopg2.connect(dbname=PGDATABASE, user=PGUSER, password=PGPASSWORD, host=PGHOST)    
+    cur = conn.cursor()
+
+    
+    cur.execute("""SELECT Overview, embedding <-> %s AS distance
+                FROM imdb_staging
+                ORDER BY distance
+                LIMIT %s""",
+                (str(query_embedding), top_k))
+    
+    results  = cur.fetchall()
+    overviews = [item[0] for item in results]
+    cur.close()
+    conn.close()
+
+    return overviews
 
 
 def generate_response(prompt):
@@ -30,7 +44,18 @@ def generate_response(prompt):
     """
 
     # TODO: Implement this function
-    pass
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "stream": False        
+    }
+    
+    response = requests.post(url=OLLAMA_CHAT_URL, json=payload)
+    res_json  = response.json()
+   # print(res_json)
+    return res_json['message']['content']
 
 
 def rag_query(user_query):
@@ -49,3 +74,4 @@ if __name__ == "__main__":
     user_query = input("Enter your query: ")
     answer = rag_query(user_query)
     print("Response:", answer)
+

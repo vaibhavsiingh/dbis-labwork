@@ -70,6 +70,8 @@ def update_embeddings():
             (embedding, ctid)
         )
 
+    cur.close()
+    conn.close()
 
 
 
