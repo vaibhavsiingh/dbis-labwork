@@ -11,7 +11,7 @@ OLLAMA_URL = "http://localhost:11434/api/embeddings"
 
 # TODO (Task 1.i): Choose the Ollama model to use for generating embeddings.
 #                  Make sure this matches the model used in ragGen.py.
-MODEL_NAME = ""  # e.g. "smollm2:135m"
+MODEL_NAME = "smollm2:135m"  # e.g. "smollm2:135m"
 
 
 # ---------------------------------------------------------------------------
@@ -30,7 +30,16 @@ def get_embedding(text):
     - Return the embedding vector.
     """
     # TODO: Implement this function
-    pass
+    payload = {
+        "model": MODEL_NAME,
+        "prompt": text
+    }
+   # print(payload)
+
+    response = requests.post(url=OLLAMA_URL, json=payload)
+    
+    return response.json()["embedding"]
+    
 
 
 def update_embeddings():
@@ -46,7 +55,22 @@ def update_embeddings():
         Calculate the embedding for the 'overview' column
     """
     # TODO: Implement this function
-    pass
+    conn = psycopg2.connect(dbname=PGDATABASE, user=PGUSER, password=PGPASSWORD, host=PGHOST)
+    conn.autocommit = True
+    cur = conn.cursor()
+
+    cur.execute("SELECT ctid, overview FROM imdb_staging")
+
+    data = cur.fetchall()
+
+    for ctid, overview in data:
+        embedding = get_embedding(overview)
+        cur.execute(
+            "UPDATE imdb_staging SET embedding = %s WHERE ctid = %s;",
+            (embedding, ctid)
+        )
+
+
 
 
 def setup_database():
@@ -87,5 +111,7 @@ def setup_database():
     conn.close()
 
 if __name__ == "__main__":
-    # setup_database() # Uncomment when you want to create/recreate the table and load data
+    setup_database() # Uncomment when you want to create/recreate the table and load data
+
     update_embeddings()
+    
