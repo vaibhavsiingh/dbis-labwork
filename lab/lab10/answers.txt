@@ -1,0 +1,293 @@
+Q1
+                                                                         QUERY PLAN
+------------------------------------------------------------------------------------------------------------------------------------------------------------    
+ Insert on ipl_deliveries  (cost=2.97..3.59 rows=0 width=0) (actual time=10.778..10.779 rows=0.00 loops=1)
+   Buffers: shared hit=10086 dirtied=45 written=48
+   CTE generatedeliveries
+     ->  Recursive Union  (cost=0.00..2.97 rows=31 width=8) (actual time=0.007..3.393 rows=10000.00 loops=1)
+           Storage: Memory  Maximum Storage: 33kB
+           ->  Result  (cost=0.00..0.01 rows=1 width=8) (actual time=0.005..0.006 rows=1.00 loops=1)
+           ->  WorkTable Scan on generatedeliveries generatedeliveries_1  (cost=0.00..0.27 rows=3 width=8) (actual time=0.000..0.000 rows=1.00 loops=10000)     
+                 Filter: ((ball_id + 1) < 10001)
+                 Rows Removed by Filter: 0
+   ->  CTE Scan on generatedeliveries  (cost=0.00..0.62 rows=31 width=8) (actual time=0.009..4.705 rows=10000.00 loops=1)
+         Storage: Memory  Maximum Storage: 441kB
+ Planning Time: 4.515 ms
+ Execution Time: 12.951 ms
+(13 rows)
+
+Q2
+ipl=> EXPLAIN ANALYSE SELECT * FROM ipl_deliveries WHERE ball_id = 1000;
+                                                 QUERY PLAN
+-------------------------------------------------------------------------------------------------------------
+ Seq Scan on ipl_deliveries  (cost=0.00..170.00 rows=1 width=8) (actual time=0.063..0.427 rows=1.00 loops=1)
+   Filter: (ball_id = 1000)
+   Rows Removed by Filter: 9999
+   Buffers: shared hit=45
+ Planning Time: 0.058 ms
+ Execution Time: 0.442 ms
+(6 rows)
+
+Q3
+ipl=> CREATE INDEX idx_ball_id ON ipl_deliveries(ball_id);                
+CREATE INDEX
+
+Q4
+ipl=>  EXPLAIN ANALYSE SELECT * FROM ipl_deliveries WHERE ball_id = 1000;
+                                                          QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_ball_id on ipl_deliveries  (cost=0.29..8.30 rows=1 width=8) (actual time=0.017..0.018 rows=1.00 loops=1)
+   Index Cond: (ball_id = 1000)
+   Index Searches: 1
+   Buffers: shared hit=3
+ Planning Time: 0.078 ms
+ Execution Time: 0.033 ms
+(6 rows)
+
+ipl=> EXPLAIN ANALYSE SELECT * FROM ipl_deliveries WHERE ball_id = 10000;
+                                                          QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_ball_id on ipl_deliveries  (cost=0.29..8.30 rows=1 width=8) (actual time=0.067..0.068 rows=1.00 loops=1)
+   Index Cond: (ball_id = 10000)
+   Index Searches: 1
+   Buffers: shared hit=2 read=1
+ Planning Time: 0.107 ms
+ Execution Time: 0.083 ms
+(6 rows)
+
+Q5
+ipl=> DELETE FROM ipl_deliveries;
+DELETE 10000
+ipl=>
+ipl=> SELECT * FROM ipl_deliveries;
+ ball_id | runs_scored
+---------+-------------
+(0 rows)
+
+Q6
+ipl=> EXPLAIN ANALYSE WITH RECURSIVE GenerateDeliveries AS (
+ipl(>     SELECT 1 AS ball_id, 2 AS runs_scored
+ipl(>     UNION ALL
+ipl(>     SELECT ball_id + 1, runs_scored + 1
+ipl(>     FROM GenerateDeliveries
+ipl(>     WHERE ball_id + 1 < 10001
+ipl(> )
+ipl-> INSERT INTO ipl_deliveries
+ipl-> SELECT * FROM GenerateDeliveries;
+                                                                         QUERY PLAN
+------------------------------------------------------------------------------------------------------------------------------------------------------------    
+ Insert on ipl_deliveries  (cost=2.97..3.59 rows=0 width=0) (actual time=19.696..19.697 rows=0.00 loops=1)
+   Buffers: shared hit=29719 dirtied=72 written=73
+   CTE generatedeliveries
+     ->  Recursive Union  (cost=0.00..2.97 rows=31 width=8) (actual time=0.003..3.413 rows=10000.00 loops=1)
+           Storage: Memory  Maximum Storage: 33kB
+           ->  Result  (cost=0.00..0.01 rows=1 width=8) (actual time=0.001..0.001 rows=1.00 loops=1)
+           ->  WorkTable Scan on generatedeliveries generatedeliveries_1  (cost=0.00..0.27 rows=3 width=8) (actual time=0.000..0.000 rows=1.00 loops=10000)     
+                 Filter: ((ball_id + 1) < 10001)
+                 Rows Removed by Filter: 0
+   ->  CTE Scan on generatedeliveries  (cost=0.00..0.62 rows=31 width=8) (actual time=0.004..4.789 rows=10000.00 loops=1)
+         Storage: Memory  Maximum Storage: 441kB
+ Planning Time: 0.062 ms
+ Execution Time: 19.794 ms
+(13 rows)
+
+
+
+
+=============================================
+=============================================
+
+Q1
+asc_db=> EXPLAIN SELECT * FROM student WHERE ID = '24';
+                                 QUERY PLAN
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.28..8.29 rows=1 width=24)
+   Index Cond: ((id)::text = '24'::text)
+(2 rows)
+
+
+asc_db=> EXPLAIN SELECT * FROM student;
+                         QUERY PLAN
+------------------------------------------------------------
+ Seq Scan on student  (cost=0.00..34.99 rows=1999 width=24)
+(1 row)
+
+Q2
+vaibhav=> EXPLAIN SELECT * FROM student WHERE ID = '55739' AND tot_cred = 50;
+                                 QUERY PLAN
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.28..8.30 rows=1 width=24)
+   Index Cond: ((id)::text = '55739'::text)
+   Filter: (tot_cred = '50'::numeric)
+
+
+Q3
+vaibhav=> CREATE INDEX idx_takes_grade ON takes(grade);
+CREATE INDEX
+vaibhav=> ANALYZE takes;
+ANALYZE
+vaibhav=> EXPLAIN SELECT * FROM takes WHERE grade = 'B+';
+                                    QUERY PLAN
+----------------------------------------------------------------------------------
+ Bitmap Heap Scan on takes  (cost=42.28..304.21 rows=3354 width=24)
+   Recheck Cond: ((grade)::text = 'B+'::text)
+   ->  Bitmap Index Scan on idx_takes_grade  (cost=0.00..41.44 rows=3354 width=0)
+         Index Cond: ((grade)::text = 'B+'::text)
+(4 rows)
+
+Q4
+vaibhav=> EXPLAIN SELECT * FROM course AS c JOIN department AS d ON c.dept_name = d.dept_name;
+                                            QUERY PLAN
+--------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=0.16..17.51 rows=200 width=157)
+   ->  Seq Scan on course c  (cost=0.00..4.00 rows=200 width=35)
+   ->  Memoize  (cost=0.16..0.42 rows=1 width=122)
+         Cache Key: c.dept_name
+         Cache Mode: logical
+         ->  Index Scan using department_pkey on department d  (cost=0.15..0.41 rows=1 width=122)
+               Index Cond: ((dept_name)::text = (c.dept_name)::text)
+(7 rows)
+
+Q5
+vaibhav=> EXPLAIN ANALYSE INSERT INTO takes2 SELECT * FROM takes;
+                                                    QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------
+ Insert on takes2  (cost=0.00..519.88 rows=0 width=0) (actual time=19.451..19.451 rows=0.00 loops=1)
+   Buffers: shared hit=30644 dirtied=221 written=223
+   ->  Seq Scan on takes  (cost=0.00..519.88 rows=29988 width=24) (actual time=0.018..1.644 rows=29988.00 loops=1)
+         Buffers: shared hit=220
+ Planning:
+   Buffers: shared hit=8
+ Planning Time: 0.546 ms
+ Execution Time: 19.860 ms
+(8 rows)
+
+Q6
+vaibhav=> EXPLAIN ANALYSE INSERT INTO takes2 SELECT * FROM takes;
+                                                    QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------
+ Insert on takes2  (cost=0.00..519.88 rows=0 width=0) (actual time=149.885..149.885 rows=0.00 loops=1)
+   Buffers: shared hit=90776 read=1 dirtied=403 written=404
+   ->  Seq Scan on takes  (cost=0.00..519.88 rows=29988 width=24) (actual time=0.009..1.910 rows=29988.00 loops=1)
+         Buffers: shared hit=220
+ Planning Time: 0.067 ms
+ Execution Time: 149.901 ms
+(6 rows)
+
+Q7
+                                                                  QUERY PLAN
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=250.53..250.54 rows=1 width=8) (actual time=119.498..119.499 rows=1.00 loops=1)
+   Buffers: shared hit=21016
+   ->  Nested Loop Semi Join  (cost=0.29..250.32 rows=85 width=0) (actual time=6.022..119.481 rows=85.00 loops=1)
+         Buffers: shared hit=21016
+         ->  Seq Scan on course c  (cost=0.00..4.00 rows=200 width=4) (actual time=0.012..0.035 rows=200.00 loops=1)
+               Buffers: shared hit=2
+         ->  Index Only Scan using takes_pkey on takes t  (cost=0.29..232.37 rows=353 width=4) (actual time=0.597..0.597 rows=0.42 loops=200)
+               Index Cond: (course_id = (c.course_id)::text)
+               Heap Fetches: 0
+               Index Searches: 200
+               Buffers: shared hit=21014
+ Planning:
+   Buffers: shared hit=17 dirtied=2
+ Planning Time: 0.991 ms
+ Execution Time: 119.534 ms
+(15 rows)
+
+Q8
+                                                                 QUERY PLAN
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=250.53..250.54 rows=1 width=8) (actual time=118.810..118.811 rows=1.00 loops=1)
+   Buffers: shared hit=21016
+   ->  Nested Loop Semi Join  (cost=0.29..250.32 rows=85 width=0) (actual time=5.900..118.796 rows=85.00 loops=1)
+         Buffers: shared hit=21016
+         ->  Seq Scan on course c  (cost=0.00..4.00 rows=200 width=4) (actual time=0.011..0.035 rows=200.00 loops=1)
+               Buffers: shared hit=2
+         ->  Index Only Scan using takes_pkey on takes t  (cost=0.29..232.37 rows=353 width=4) (actual time=0.593..0.593 rows=0.42 loops=200)
+               Index Cond: (course_id = (c.course_id)::text)
+               Heap Fetches: 0
+               Index Searches: 200
+               Buffers: shared hit=21014
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.268 ms
+ Execution Time: 118.840 ms
+(15 rows)
+
+Q9
+vaibhav(>     SELECT dept_name FROM instructor
+vaibhav(> );
+                                    QUERY PLAN
+-----------------------------------------------------------------------------------
+ Aggregate  (cost=19.06..19.07 rows=1 width=8)
+   ->  Seq Scan on department d  (costw=1.64..18.39 rows=270 width=0)
+         Filter: (NOT (ANY ((dept_name)::text = ((hashed SubPlan 1).col1)::text)))
+         SubPlan 1
+           ->  Seq Scan on instructor  (cost=0.00..1.51 rows=51 width=10)
+         SubPlan 1
+           ->  Seq Scan on instructor  (cost=0.00..1.51 rows=51 width=10)
+           ->  Seq Scan on instructor  (cost=0.00..1.51 rows=51 width=10)
+(5 rows)
+
+vaibhav=>
+vaibhav=> SELECT COUNT(*)
+vaibhav-> FROM department d
+vaibhav-> WHERE d.dept_name NOT IN (
+vaibhav(>     SELECT dept_name FROM instructor
+vaibhav(> );
+ count
+-------
+     3
+(1 row)
+
+
+
+AFter adding
+                                   QUERY PLAN
+-----------------------------------------------------------------------------------
+ Aggregate  (cost=19.06..19.07 rows=1 width=8)
+   ->  Seq Scan on department d  (cost=1.64..18.39 rows=270 width=0)
+         Filter: (NOT (ANY ((dept_name)::text = ((hashed SubPlan 1).col1)::text)))
+         SubPlan 1
+           ->  Seq Scan on instructor  (cost=0.00..1.51 rows=51 width=10)
+(5 rows)
+
+vaibhav=> SELECT COUNT(*)
+vaibhav-> FROM department d
+vaibhav-> WHERE d.dept_name NOT IN (
+vaibhav(>     SELECT dept_name FROM instructor
+vaibhav(> );
+ count
+-------
+     0
+(1 row)
+
+using exist
+
+vaibhav=> EXPLAIN SELECT COUNT(*)
+vaibhav-> FROM department d
+vaibhav-> WHERE NOT EXISTS (
+vaibhav(>     SELECT dept_name FROM instructor i
+vaibhav(>     WHERE i.dept_name = d.dept_name
+vaibhav(> );
+                                    QUERY PLAN
+----------------------------------------------------------------------------------
+ Aggregate  (cost=25.12..25.13 rows=1 width=8)
+   ->  Hash Right Anti Join  (cost=22.15..23.82 rows=523 width=0)
+         Hash Cond: ((i.dept_name)::text = (d.dept_name)::text)
+         ->  Seq Scan on instructor i  (cost=0.00..1.51 rows=51 width=10)
+         ->  Hash  (cost=15.40..15.40 rows=540 width=58)
+               ->  Seq Scan on department d  (cost=0.00..15.40 rows=540 width=58)
+(6 rows)
+
+
+vaibhav=> SELECT COUNT(*)
+vaibhav-> FROM department d
+vaibhav-> WHERE NOT EXISTS (
+vaibhav(>     SELECT dept_name FROM instructor i
+vaibhav(>     WHERE i.dept_name = d.dept_name
+vaibhav(> );
+ count
+-------
+     3
+(1 row)
